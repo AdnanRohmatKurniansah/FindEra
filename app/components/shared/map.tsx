@@ -9,14 +9,14 @@ interface MapProps {
 }
 
 const Map = ({ position, zoom }: MapProps) => {
-  return <MapContainer className="h-full w-full" center={position} zoom={zoom} scrollWheelZoom={false} zoomControl={true}>
+  return <MapContainer className="h-full w-full" center={position} zoom={zoom} scrollWheelZoom={true} zoomControl={true}>
     <TileLayer
       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     />
     <Marker position={position}>
       <Popup>
-        A pretty CSS3 popup. <br /> Easily customizable.
+        Halo Bang
       </Popup>
     </Marker>
   </MapContainer>

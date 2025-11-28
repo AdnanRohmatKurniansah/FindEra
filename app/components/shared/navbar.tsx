@@ -35,7 +35,7 @@ interface MenuItem {
   title: string;
   url: string;
   description?: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; 
   items?: MenuItem[];
 }
 
@@ -65,10 +65,9 @@ const Navbar = ({
     alt: "logo exploreease",
   },
   menu = [
-    { title: "Home", url: "/" },
-    { title: "Tours", url: "/tours" },
-    { title: "Destinations", url: "/destinations" },
-    { title: "Contact", url: "/contact" },
+    { title: "Tentang Kami", url: "/tentang-kami" },
+    { title: "Guidelines", url: "/guide" },
+    { title: "Hubungi Kami", url: "/hubungi-kami" },
   ],
   option = {
     report: { 
@@ -92,21 +91,25 @@ const Navbar = ({
       params.delete('search')
     }
 
-    router.push(`/tours?${params.toString()}`)
+    router.push(`/reports?${params.toString()}`)
   }
 
   return (
     <section className="sticky top-0 z-50 bg-white py-2 px-5 md:px-14 border-b shadow-sm">
       <div className="container">
-        {/* DESKTOP NAV */}
         <nav className="hidden lg:flex items-center justify-between gap-4">
-          {/* Logo + Search */}
           <div className="flex items-center gap-4 w-full">
             <Link href={logo.url} className="flex items-center gap-2 shrink-0">
               <Image src={logo.src} width={0} height={0} sizes="100vw" className="h-16 w-auto" alt={logo.alt} />
             </Link>
             <div className="relative w-full ps-2">
-              <form onSubmit={handleSearch} className="relative w-full ps-2 py-3">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  {menu.map((item) => renderMenuItem(item))}
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
+            <form onSubmit={handleSearch} className="relative w-full ps-2 py-3">
                 <span className="absolute inset-y-0 start-4 flex items-center text-gray-400">
                   <Search className="w-4 h-4" />
                 </span>
@@ -120,19 +123,9 @@ const Navbar = ({
                   placeholder="Cari barang hilang atau ditemukan..."
                   className="bg-white w-full h-10 shadow-sm py-2 ps-8 pe-4 text-sm focus:outline-none"
                 />
-              </form>
-            </div>
+            </form>
           </div>
 
-          {/* <div className="flex-1 flex justify-center">
-            <NavigationMenu>
-              <NavigationMenuList>
-                {menu.map((item) => renderMenuItem(item))}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div> */}
-
-          {/* Wishlist */}
           <div className="flex items-center gap-3 w-1/3 justify-end">
             <Button className="px-5" asChild size="default">
               <Link className="group" href={option.report.url}>
@@ -147,41 +140,22 @@ const Navbar = ({
           </div>
         </nav>
 
-        {/* MOBILE NAV */}
         <div className="block lg:hidden">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Link href={logo.url} className="flex items-center gap-2">
-              <Image width={0} height={0} sizes="100vw" src={logo.src} className="max-h-16 w-auto" alt={logo.alt} />
+              <Image width={0} height={0} sizes="100vw" src={logo.src} className="max-h-14 w-auto" alt={logo.alt} />
             </Link>
-            <div className="search ps-2 flex items-center relative w-2/3 pe-4">
-              <form onSubmit={handleSearch} className="relative w-full ps-2">
-                <span className="absolute inset-y-0 start-4 pe-4 flex items-center text-gray-400">
-                  <Search className="w-4 h-4" />
-                </span>
-                <Input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSearch(e)
-                  }}
-                  placeholder="Cari barang hilang atau ditemukan..."
-                  className="w-full bg-white border-2 px-2 py-2 ps-10 text-sm focus:outline-none focus:ring-none"
-                />
-              </form>
-            </div>
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
+                <Button className="border-primary" variant="outline" size="icon">
+                  <Menu className="size-4 text-primary" />
                 </Button>
               </SheetTrigger>
               <SheetContent className="overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>
                     <Link href={logo.url} className="flex items-center gap-2">
-                      <Image width={0} height={0} sizes="100vw" src={logo.src} className="max-h-12 w-auto" alt={logo.alt} />
+                      <Image width={0} height={0} sizes="100vw" src={logo.src} className="max-h-14 w-auto" alt={logo.alt} />
                     </Link>
                   </SheetTitle>
                 </SheetHeader>
@@ -195,8 +169,28 @@ const Navbar = ({
                   </Accordion>
 
                   <div className="flex flex-col gap-3">
+                    <form onSubmit={handleSearch} className="relative w-full">
+                      <span className="absolute inset-y-0 start-4 pe-4 flex items-center text-gray-400">
+                        <Search className="w-4 h-4" />
+                      </span>
+                      <Input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSearch(e)
+                        }}
+                        placeholder="Cari barang hilang atau ditemukan..."
+                        className="w-full bg-white border-2 px-2 py-2 ps-10 text-sm focus:outline-none focus:ring-none"
+                      />
+                    </form>
                     <Button asChild>
                       <Link href={option.report.url}>{option.report.title}</Link>
+                    </Button>
+                     <Button className="px-5 border border-primary shadow-md " variant={'outline'} asChild size="default">
+                      <Link className="group" href={option.signIn.url}>
+                        {option.signIn.title}
+                      </Link>
                     </Button>
                   </div>
                 </div>

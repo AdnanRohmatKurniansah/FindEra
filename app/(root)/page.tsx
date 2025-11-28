@@ -21,7 +21,7 @@ export default function Home() {
           </div>
         </div>
         <div className="report py-6 px-5">
-          <div className="grid justify-center grid-cols-2 md:grid-cols-3 gap-4 mb-7">
+          <div className="grid justify-center grid-cols-1 md:grid-cols-3 gap-4 mb-7">
             <div className="report_count relative">
               <div className="flex justify-between gap-4 rounded-[10px] shadow-sm px-4 py-4 bg-[#EEF3FF] transition-all duration-200 hover:scale-105 hover:shadow-md">
                 <div className="data">
@@ -48,7 +48,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="founded_items col-span-2 md:col-span-1 relative">
+            <div className="founded_items relative">
               <div className="flex justify-between gap-4 rounded-[10px] shadow-sm px-4 py-4 bg-[#EFFDF4] transition-all duration-200 hover:scale-105 hover:shadow-md">
                 <div className="data">
                   <span className="text-gray-500 text-[14px]">Hasil Temuan</span>
@@ -77,7 +77,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="list_item grid grid-cols-2 md:grid-cols-2 gap-4">
+          <div className="list_item grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <ItemsCard key={i} />
             ))}

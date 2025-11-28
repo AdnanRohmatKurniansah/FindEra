@@ -22,7 +22,7 @@ const ItemsCard = () => {
             </Badge>
           </div>
           <div className="absolute right-2 top-2">
-            <Badge className="px-2 py-1 bg-transparent">
+            <Badge className="px-2 py-1 bg-black-transparent">
                 <Calendar className="w-3 me-1" /> 8 Nov
             </Badge>
           </div>

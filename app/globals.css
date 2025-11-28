@@ -46,7 +46,7 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --background-transparent: rgb(0, 0, 0, 0.6);
+  --background-black-transparent: rgb(0, 0, 0, 0.6);
   --background-white-transparent: rgb(255, 255, 255, 0.8);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -123,8 +123,8 @@
   }
 }
 
-.bg-transparent {
-  background-color: var(--background-transparent);
+.bg-black-transparent {
+  background-color: var(--background-black-transparent);
 }
 .bg-white-transparent {
   background-color: var(--background-white-transparent);

@@ -67,7 +67,7 @@ const Footer = async ({
                 </li>
               </ul>
 
-              <div className="mt-4 flex justify-center gap-4 text-[13px] text-gray-700">
+              <div className="mt-4 flex justify-center gap-4 text-[11px] md:text-[13px] text-gray-700">
                 {bottomLinks.map((link, i) => (
                   <Link
                     key={i}

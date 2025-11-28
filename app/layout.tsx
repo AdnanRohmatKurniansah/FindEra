@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   description: "Peta barang hilang dan ditemukan berbasis lokasi. Laporkan, temukan, dan klaim barang dengan cepat menggunakan map real-time. Aman, cerdas, dan berbasis komunitas.",
   keywords: [
-    "FindEra",
+    "findera",
     "lost and found",
     "barang hilang",
     "temukan barang hilang",
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Toaster richColors position="top-right" closeButton />
         {children}
       </body>
     </html>
