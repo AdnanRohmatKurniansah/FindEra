@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@/app/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
@@ -11,7 +11,7 @@ interface HomeMapProps {
 
 const HomeMap = (props: HomeMapProps) => {
   const Map = useMemo(() => dynamic(
-    () => import('@/app/components/shared/map'),
+    () => import('@/components/shared/map'),
     {
       loading: () => <Skeleton className="h-full w-full" />,
       ssr: false

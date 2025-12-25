@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/providers/user-provider'
 import React from 'react'
 
 export default function RootLayout({
@@ -7,7 +8,9 @@ export default function RootLayout({
 }) {
   return (
     <div className="flex flex-col">
-      <main className="flex-1">{children}</main>
+      <AuthProvider>
+        <main className="flex-1">{children}</main>
+      </AuthProvider>
     </div>
   )
 }

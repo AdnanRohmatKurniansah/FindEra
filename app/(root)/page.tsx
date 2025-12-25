@@ -1,7 +1,7 @@
 import { Clock, TrendingUp, Users } from "lucide-react";
 import FilterBar from "./_components/filter-bar";
 import ItemsCard from "./_components/items-card";
-import PaginationUi from "../components/shared/pagination-data";
+import PaginationUi from "@/components/shared/pagination-data";
 import { Metadata } from "next";
 import HomeMap from "./_components/home-map";
 

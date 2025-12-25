@@ -1,7 +1,8 @@
-import { Button } from '@/app/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Award, BookCheck, GlobeIcon, MapPin, TrendingUp, Users, Verified } from 'lucide-react'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Cta from '../_components/cta'
 
 export const metadata: Metadata = {
   title: "Tentang Kami | Findera"
@@ -64,9 +65,9 @@ const whychoose = [
 
 const TentangKami = () => {
   return (
-    <div className="py-8">
+    <div className="py-10">
       <div className="mx-auto px-5 md:px-15">
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#4741f5] via-[#3f70ee] to-[#726ef1] rounded-2xl p-8 mb-8 md:mb-16 text-white">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#007f5f] via-[#18b18a] to-[#30d3aa] rounded-2xl p-8 mb-8 md:mb-16 text-white">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative">
             <h1 className="text-[26px] font-bold mb-3">Tentang Kami</h1>
@@ -118,19 +119,7 @@ const TentangKami = () => {
             )
           })}
         </div>
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#4741f5] via-[#3f70ee] to-[#726ef1] rounded-2xl p-8 mb-8 md:mb-16 text-white">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative text-center">
-            <h1 className="text-[21px] font-bold mb-3">Bergabung dengan Kami</h1>
-            <div className="flex justify-center">
-              <p className="text-[15px] md:text-[17px] max-w-3xl">
-                Jadilah bagian dari komunitas yang membantu ribuan orang menemukan kembali barang berharga mereka. Bersama, kita bisa membuat perbedaan.
-              </p>
-            </div>
-            <Button className='mt-4 md:mt-6 text-gray-700 px-4 md:px-8 py-5' variant={'outline'} >
-            <Link className="group" href={'/'}>Mulai Sekarang</Link></Button>
-          </div>
-        </div>
+        <Cta />
       </div>
     </div>
   )
