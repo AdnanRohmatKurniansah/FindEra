@@ -30,3 +30,51 @@ export type changePasswordData = {
     new_password: string
     old_password: string
 }
+
+export type createReportData = {
+    title: string
+    description: string
+    id_category: string
+    location_text: string
+    latitude: number
+    longitude: number
+    status: string
+    image_url: FileList
+    report_date: string
+}
+
+export type updateReportData = {
+    title: string
+    description: string
+    id_category: string
+    location_text: string
+    latitude: number
+    longitude: number
+    status: string
+    report_date: string
+    image_url: string
+}
+
+export type itemUser = {
+  id: string
+  name: string
+  image: string | null
+}
+
+export type itemData = {
+  id: string
+  id_user: string
+  title: string
+  description: string
+  location_text: string
+  latitude: number
+  longitude: number
+  status: string
+  image_url: string
+  report_date: string
+  created_at: string
+  updated_at: string
+  profiles: itemUser[]  
+}
+
+

@@ -29,20 +29,40 @@ CREATE TABLE profiles (
   FOREIGN KEY (id_user) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE categories (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          VARCHAR(255) NOT NULL,
+  created_at    TIMESTAMP DEFAULT NOW(),
+  updated_at    TIMESTAMP DEFAULT NOW(),
+)
+
+INSERT INTO categories (name) VALUES
+('Semua'),
+('Dompet'),
+('HP'),
+('Kunci'),
+('Tas'),
+('Elektronik'),
+('Dokumen'),
+('Perhiasan'),
+('Lainnya');
+
 CREATE TABLE items (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   id_user       UUID NOT NULL,
   title         VARCHAR(255) NOT NULL,
   description   TEXT NOT NULL,
-  category      VARCHAR(100),
-  location_text TEXT,
-  latitude      DOUBLE PRECISION,
-  longitude     DOUBLE PRECISION,
+  id_category   UUID NOT NULL,
+  location_text TEXT NOT NULL,
+  latitude      DOUBLE PRECISION NOT NULL,
+  longitude     DOUBLE PRECISION NOT NULL,
   status        item_status_enum DEFAULT 'hilang',  
-  image_url     TEXT,
+  image_url     TEXT NOT NULL,
+  report_date   DATE NOT NULL,
   created_at    TIMESTAMP DEFAULT NOW(),
   updated_at    TIMESTAMP DEFAULT NOW(),
   FOREIGN KEY (id_user) REFERENCES profiles(id) ON DELETE CASCADE
+  FOREIGN KEY (id_category) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE claims (

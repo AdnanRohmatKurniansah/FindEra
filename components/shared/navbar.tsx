@@ -27,8 +27,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "../ui/input";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import UserDropdown from "./profile";
 import { useAuth } from "@/providers/user-provider";
 import { useProfile } from "@/hooks/useProfiles";
@@ -82,22 +82,33 @@ const Navbar = ({
   },
 }: NavbarProps) => {
   const pathname = usePathname()
+  const params = useSearchParams()
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const searchParam = params.get("search") || ""
 
-  const { data: profile } = useProfile()
+    const { data: profile } = useProfile()
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    useEffect(() => {
+      setSearch(searchParam)
+    }, [searchParam])
+
+  const handleSearch = (
+    e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLInputElement>
+  ) => {
     e.preventDefault()
-    const params = new URLSearchParams(window.location.search)
+
+    const p = new URLSearchParams(params.toString())
 
     if (search.trim()) {
-      params.set('search', search.trim())
+      p.set("search", search.trim())
     } else {
-      params.delete('search')
+      p.delete("search")
     }
 
-    router.push(`/reports?${params.toString()}`)
+    p.set("page", "1")
+
+    router.push(`/?${p.toString()}`)
   }
 
   return (

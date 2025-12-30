@@ -14,7 +14,7 @@ export const getMyProfile = async () => {
 
   const { data: profile, error } = await createClientSupabase()
     .from("profiles")
-    .select("id_user, name, image, phone, created_at")
+    .select("*")
     .eq("id_user", user.id)
     .single()
 
@@ -41,19 +41,12 @@ export const updateDataProfile = async (profileData: UpdateProfilePayload) => {
 
 export const updateAvatarProfile = async (file: File) => {
   try {
-    const { data: { user } } = await createClientSupabase().auth.getUser()
-    if (!user) throw new Error("Silahkan login dahulu")
+    const profile = await getMyProfile()
 
     const fileExt = file.name.split(".").pop()
-    const fileName = `${user.id}.${fileExt}`
+    const fileName = `${profile.id}.${fileExt}`
     const filePath = `${FOLDER}/${fileName}`
-
-    const { data: profile } = await createClientSupabase()
-      .from("profiles")
-      .select("image")
-      .eq("id_user", user.id)
-      .single()
-
+    
     if (profile?.image) {
       const oldPath = extractStoragePath(profile.image, BUCKET)
       if (oldPath) {
@@ -66,7 +59,7 @@ export const updateAvatarProfile = async (file: File) => {
     const { error } = await createClientSupabase()
       .from("profiles")
       .update({ image: publicUrl })
-      .eq("id_user", user.id)
+      .eq("id_user", profile.id_user)
 
     if (error) throw error
 
@@ -80,17 +73,8 @@ export const updateAvatarProfile = async (file: File) => {
 }
 
 export const deleteAvatarProfile = async () => {
-  const supabase = createClientSupabase()
-
   try {
-    const { data: { user } } = await createClientSupabase().auth.getUser()
-    if (!user) throw new Error("Silahkan login dahulu")
-
-    const { data: profile } = await createClientSupabase()
-      .from("profiles")
-      .select("image")
-      .eq("id_user", user.id)
-      .single()
+    const profile = await getMyProfile()
 
     if (profile?.image) {
       const oldPath = extractStoragePath(profile.image, BUCKET)
@@ -99,10 +83,10 @@ export const deleteAvatarProfile = async () => {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await createClientSupabase()
       .from("profiles")
       .update({ image: null })
-      .eq("id_user", user.id)
+      .eq("id_user", profile.id_user)
 
     if (error) throw error
 

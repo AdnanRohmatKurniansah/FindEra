@@ -8,6 +8,8 @@ export const useProfile = () => {
       const profile = await getMyProfile()
       return profile
     },
+    staleTime: 60 * 1000,
+    retry: 3,
   })
 }
 

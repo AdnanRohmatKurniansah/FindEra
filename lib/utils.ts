@@ -12,3 +12,18 @@ export const formatMonthYear = (dateString: string) => {
     month: "long",
   })
 }
+
+export const getLastLocationPart = (text: string) => {
+  if (!text) return ''
+  const parts = text.split(',')
+  return parts[parts.length - 1].trim()
+}
+
+export const generateRandomString = (length = 12) => {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  let result = ""
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}

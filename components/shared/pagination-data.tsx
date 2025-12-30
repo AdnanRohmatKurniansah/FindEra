@@ -1,24 +1,42 @@
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination";
 
-const PaginationData = () => {
+interface Props {
+  page: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
+
+const PaginationData = ({ page, totalPages, onPageChange }: Props) => {
   return (
     <Pagination>
-        <PaginationContent>
-            <PaginationItem>
-            <PaginationPrevious href="#" size={undefined} />
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            onClick={() => onPageChange(Math.max(page - 1, 1))}
+          />
+        </PaginationItem>
+        {Array.from({ length: totalPages }).map((_, i) => {
+          const p = i + 1
+          return (
+            <PaginationItem key={p}>
+              <PaginationLink
+                isActive={p === page}
+                onClick={() => onPageChange(p)}
+              >
+                {p}
+              </PaginationLink>
             </PaginationItem>
-            <PaginationItem>
-            <PaginationLink href="#" size={undefined}>1</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-            <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-            <PaginationNext href="#" size={undefined} />
-            </PaginationItem>
-        </PaginationContent>
+          )
+        })}
+        <PaginationItem>
+          <PaginationNext
+            onClick={() => onPageChange(Math.min(page + 1, totalPages))}
+          />
+        </PaginationItem>
+      </PaginationContent>
     </Pagination>
   )
 }
+
 
 export default PaginationData

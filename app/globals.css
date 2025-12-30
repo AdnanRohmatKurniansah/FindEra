@@ -129,3 +129,7 @@
 .bg-white-transparent {
   background-color: var(--background-white-transparent);
 }
+
+.leaflet-container {
+  cursor: crosshair;
+}
