@@ -56,9 +56,9 @@ export type updateReportData = {
 }
 
 export type itemUser = {
-  id: string
-  name: string
-  image: string | null
+  id?: string
+  name?: string
+  image?: string | null
 }
 
 export type itemData = {
@@ -74,7 +74,7 @@ export type itemData = {
   report_date: string
   created_at: string
   updated_at: string
-  profiles: itemUser[]  
+  profiles?: itemUser | itemUser[] | null
 }
 
 

@@ -10,6 +10,10 @@ import { itemData } from '../../../types/index';
 import { formatMonthYear, getLastLocationPart } from '../../../lib/utils';
 
 const ItemsCard = ({ item }: {item: itemData}) => {
+  const profile = Array.isArray(item.profiles)
+    ? item.profiles[0]
+    : item.profiles
+
   return (
     <div className="group block h-full">
       <Card className="overflow-hidden h-full gap-0 py-0 hover:shadow-md transition-shadow">
@@ -46,14 +50,20 @@ const ItemsCard = ({ item }: {item: itemData}) => {
               ? item.description.slice(0, 50) + '...'
               : item.description}
           </p>
-          <div className="flex items-center gap-3 pt-2 border-t">
-            <div className='profile rounded-full w-7 h-7 relative overflow-hidden'>
-              <Image alt={item.profiles[0].name} src={item.profiles[0].image || '/images/avatar.png'} fill />
+          {profile && (
+            <div className="flex items-center gap-3 pt-2 border-t">
+              <div className="profile rounded-full w-7 h-7 relative overflow-hidden">
+                <Image
+                  alt={profile.name ?? "User Avatar"}
+                  src={profile.image || "/images/avatar.png"}
+                  fill
+                />
+              </div>
+              <p className="text-[13px] font-medium text-gray-600">
+                {profile.name}
+              </p>
             </div>
-            <div className="name">
-              <p className='text-[13px] font-medium text-gray-600'>{item.profiles[0].name}</p>
-            </div>
-          </div>
+          )}
           <Button className='hidden md:flex w-full mt-3'>Lihat Detail <ArrowRight /></Button>
         </Link>
       </Card>
