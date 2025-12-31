@@ -22,28 +22,27 @@ const AccountProfile = () => {
   return (
     <>
         <div className="border shadow-md rounded-md p-4 mb-8">
-        <div className="relative mt-4 flex justify-center">
-            <Image  
-            src={avatarUrl}
-            alt="User Avatar"
-            width={80}
-            height={80}
-            className="rounded-full object-cover"
-            />
-            <div className="absolute flex justify-center items-center bottom-0 right-18 w-5 h-5 rounded-full bg-green-500">
-            <Check className="w-4 text-white" />
+            <div className="relative mt-4 flex justify-center">
+                <Image  
+                src={avatarUrl}
+                alt="User Avatar"
+                width={80}
+                height={80}
+                className="rounded-full object-cover"
+                />
+                <div className="absolute flex justify-center items-center bottom-0 right-18 w-5 h-5 rounded-full bg-green-500">
+                    <Check className="w-4 text-white" />
+                </div>
             </div>
-        </div>
-
-        <div className="text-center mt-3">
-            <h2 className="font-semibold text-lg">{profile.name}</h2>
-            <h4 className="font-normal text-gray-600 text-md">
-            Member Sejak {formatMonthYear(profile.created_at)}
-            </h4>
-            <Button className="mt-3 w-full" asChild>
-                <Link href="/akun/edit-profile">Edit Profile</Link>
-            </Button>
-        </div>
+            <div className="text-center mt-3">
+                <h2 className="font-semibold text-lg">{profile.name}</h2>
+                <h4 className="font-normal text-gray-600 text-md">
+                Member Sejak {formatMonthYear(profile.created_at)}
+                </h4>
+                <Button className="mt-3 w-full" asChild>
+                    <Link href="/akun/edit-profile">Edit Profile</Link>
+                </Button>
+            </div>
         </div>
         <div className="border shadow-md rounded-md p-4 mb-4">
             <div className="text-start">

@@ -5,18 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatMonthYear = (dateString: string) => {
+export const formatMonthYear = (dateString?: string | null) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
   return date.toLocaleDateString("id-ID", {
     year: "numeric",
     month: "long",
   })
-}
-
-export const getLastLocationPart = (text: string) => {
-  if (!text) return ''
-  const parts = text.split(',')
-  return parts[parts.length - 1].trim()
 }
 
 export const generateRandomString = (length = 12) => {

@@ -71,18 +71,21 @@ export const findReport = async (id_item: string) => {
   const { data, error } = await createClientSupabase()
     .from("items")
     .select(`
-      id,
-      title,
-      description,
-      id_category,
-      location_text,
-      latitude,
-      longitude,
-      status,
-      image_url,
-      report_date,
-      created_at,
-      updated_at
+        id,
+        id_user,
+        id_category,
+        title,
+        description,
+        location_text,
+        latitude,
+        longitude,
+        status,
+        image_url,
+        report_date,
+        created_at,
+        updated_at,
+        profiles ( id, name, image, created_at ),
+        categories!inner ( id, name )
     `)
     .eq("id", id_item)
     .single()

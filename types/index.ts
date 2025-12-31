@@ -59,6 +59,7 @@ export type itemUser = {
   id?: string
   name?: string
   image?: string | null
+  created_at?: string
 }
 
 export type itemData = {

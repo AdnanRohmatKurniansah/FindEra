@@ -14,7 +14,7 @@ export default function RootLayout({
       <AuthProvider>
         <Suspense
           fallback={
-            <div className="flex flex-col items-center justify-center flex-1 min-h-80 gap-3">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-screen gap-3">
               <Spinner />
               <p className="text-sm text-muted-foreground animate-pulse">
                 Tunggu sebentar...
