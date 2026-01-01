@@ -57,7 +57,7 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
           </div>
         </div>
 
-        {myProfileId ? (
+        {myProfileId == profile.id ? (
           <Button asChild className="w-full">
             <Link href="/akun">
               <Edit2Icon className="mr-2" />
@@ -72,7 +72,7 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
           </ChatDialog>
         )}
 
-        {myProfileId ? (
+        {myProfileId == profile.id ? (
           <Button asChild className="w-full" variant="destructive">
             <Link href="/akun">
               <Trash2Icon className="mr-2" />
