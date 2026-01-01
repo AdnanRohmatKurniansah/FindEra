@@ -10,7 +10,7 @@ type UpdateProfilePayload = Partial<Omit<profileData, "id_user" | "created_at">>
 export const getMyProfile = async () => {
   const { data: { user } } = await createClientSupabase().auth.getUser()
 
-  if (!user) throw new Error("Silahkan login dahulu")
+  if (!user) return null
 
   const { data: profile, error } = await createClientSupabase()
     .from("profiles")
@@ -42,6 +42,10 @@ export const updateDataProfile = async (profileData: UpdateProfilePayload) => {
 export const updateAvatarProfile = async (file: File) => {
   try {
     const profile = await getMyProfile()
+
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
 
     const fileExt = file.name.split(".").pop()
     const fileName = `${profile.id}.${fileExt}`
@@ -75,6 +79,10 @@ export const updateAvatarProfile = async (file: File) => {
 export const deleteAvatarProfile = async () => {
   try {
     const profile = await getMyProfile()
+
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
 
     if (profile?.image) {
       const oldPath = extractStoragePath(profile.image, BUCKET)

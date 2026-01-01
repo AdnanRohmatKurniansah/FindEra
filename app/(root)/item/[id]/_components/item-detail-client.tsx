@@ -13,18 +13,39 @@ import {
   BreadcrumbSeparator
 } from '@/components/ui/breadcrumb'
 import Link from 'next/link'
-import { SlashIcon, MapPin, Calendar, User, Share2, Text } from 'lucide-react'
-import Spinner from '@/components/ui/spinner'
+import { SlashIcon, MapPin, Calendar, Share2, Info } from 'lucide-react'
 import { useFindReport } from '@/hooks/useReports'
 import { toast } from 'sonner'
 import ItemDetailMap from './item-detail-map'
 import AccountItem from './account-item'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { isValidUUID } from '@/lib/utils'
+import ItemDetailSkeleton from './item-detail-skeleton'
+import { createClientSupabase } from '@/lib/supabase/client'
+import { useProfile } from '@/hooks/useProfiles'
 
 const ItemDetailClient = ({ id }: { id: string }) => {
+  const router = useRouter()
+  const isUUID = isValidUUID(id)
   const { data, isLoading, error } = useFindReport(id)
+  const { data: profile, isLoading: loadingProfile } = useProfile()
 
-  if (isLoading) return <div className="flex justify-center py-20"><Spinner /></div>
-  if (error || !data) return <div className="text-center py-20">Data tidak ditemukan</div>
+  const myProfileId = profile?.id ?? null
+
+  useEffect(() => {
+    if (!isUUID) {
+      router.replace('/404')
+    }
+  }, [isUUID, router])
+
+  if (isLoading || loadingProfile) {
+    return <ItemDetailSkeleton />
+  }
+
+  if (error || !data) {
+    return null 
+  }
 
   const category = Array.isArray(data.categories)
     ? data.categories[0]
@@ -55,7 +76,7 @@ const ItemDetailClient = ({ id }: { id: string }) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mb-16">
           <div className="lg:col-span-2 space-y-4">
             <div className="mb-6">
               <h1 className="text-3xl font-bold flex justify-between items-center mb-4">
@@ -75,8 +96,11 @@ const ItemDetailClient = ({ id }: { id: string }) => {
                   )}
               </h1>
               <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                  <Badge className='px-3 py-1'> {category.name}</Badge>
-                  <span className="flex items-center text-gray-600"><Calendar className="h-4 w-4 mr-2" />Dilaporkan pada {new Date(data.report_date).toLocaleDateString()}</span>
+                  <Badge className='px-3 py-1'>{category.name}</Badge>
+                  <span className="flex items-center text-gray-600">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Dilaporkan pada {new Date(data.report_date).toLocaleDateString()}
+                  </span>
                   <Button className='border' variant="outline" size="sm" onClick={CopyUrl}>
                     <Share2 className="w-4 h-4 mr-1" /> Bagikan
                   </Button>
@@ -87,24 +111,29 @@ const ItemDetailClient = ({ id }: { id: string }) => {
                 <Image src={data.image_url} alt={data.title} fill className="object-cover" />
               </div>
             </div>
-            <Card className="p-5 shadow-md mb-10">
-              <h3 className="flex items-center font-semibold border-b-2 pb-3 gap-2"><Text className='h-5 w-5 text-primary' /> Deskripsi</h3>
-              <p className="text-sm text-gray-600">{data.description}</p>
+            <Card className="p-5 mb-10">
+              <h3 className="flex items-center font-semibold border-b-2 pb-3 gap-2">
+                <Info className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600" />
+                Deskripsi
+              </h3>
+              <p className="text-sm text-gray-600 mt-3">{data.description}</p>
             </Card>
 
-            <Card className="overflow-hidden">
-              <CardHeader className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
+            <Card className="overflow-hidden gap-4">
+              <CardHeader className="flex items-center gap-2 px-5">
+                <MapPin className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-primary" />
                 <h3 className="font-semibold">Lokasi Terakhir Keberadaan</h3>
               </CardHeader>
               <ItemDetailMap item={data} />
-              <CardFooter className='py-0'>
-                <p className="text-sm "><span className='font-semibold'>Lokasi Detail di :</span> {data.location_text}</p>
+              <CardFooter className='py-2'>
+                <p className="text-sm">
+                  <span className='font-semibold'>Lokasi Detail di :</span> {data.location_text}
+                </p>
               </CardFooter>
             </Card>
           </div>
           <div className="relative md:sticky md:top-28 h-fit space-y-4">
-            <AccountItem data={data} />
+            <AccountItem data={data} myProfileId={myProfileId} />
           </div>
         </div>
       </div>

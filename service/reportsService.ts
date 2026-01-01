@@ -2,7 +2,7 @@ import { createClientSupabase } from "@/lib/supabase/client"
 import { extractStoragePath, removeFile, uploadFile } from "@/lib/supabase/storage"
 import { createReportData, updateReportData } from "@/types"
 import { getMyProfile } from "./profileService"
-import { generateRandomString } from "@/lib/utils"
+import { generateRandomString, isValidUUID } from "@/lib/utils"
 
 const BUCKET = "findera_bucket"
 const FOLDER = "items_upload"
@@ -68,24 +68,27 @@ export const getReports = async (page = 1, limit = 6,
 }
 
 export const findReport = async (id_item: string) => {
+  if (!isValidUUID(id_item)) return null
+
   const { data, error } = await createClientSupabase()
     .from("items")
     .select(`
-        id,
-        id_user,
-        id_category,
-        title,
-        description,
-        location_text,
-        latitude,
-        longitude,
-        status,
-        image_url,
-        report_date,
-        created_at,
-        updated_at,
-        profiles ( id, name, image, created_at ),
-        categories!inner ( id, name )
+      id,
+      id_user,
+      id_category,
+      title,
+      description,
+      location_text,
+      latitude,
+      longitude,
+      status,
+      image_url,
+      report_date,
+      created_at,
+      updated_at,
+      profiles ( id, name, image, created_at ),
+      categories!inner ( id, name ),
+      chat_rooms ( id )
     `)
     .eq("id", id_item)
     .single()
@@ -98,6 +101,10 @@ export const findReport = async (id_item: string) => {
 export const createReport = async (payload: createReportData) => {
   try {
     const profile = await getMyProfile()
+
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
 
     const file = payload.image_url[0] 
     if (!file) throw new Error("File tidak ditemukan")
@@ -133,6 +140,10 @@ export const createReport = async (payload: createReportData) => {
 export const updateReport = async (id_item: string, payload: createReportData) => {
   try {
     const profile = await getMyProfile()
+
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
 
     const { data: oldReport, error: oldError } = await createClientSupabase()
       .from("items")
@@ -197,6 +208,10 @@ export const deleteReport = async (id_item: string) => {
   try {
     const profile = await getMyProfile()
 
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
+
     const { data: createReportData, error: errorReport } = await createClientSupabase()
       .from("items")
       .select("*")
@@ -229,6 +244,10 @@ export const getMyReports = async () => {
   try {
     const profile = await getMyProfile()
 
+    if (!profile) {
+      throw new Error("Silahkan login terlebih dahulu")
+    }
+
     const { data, error } = await createClientSupabase()
       .from("items")
       .select(`
@@ -260,6 +279,10 @@ export const getMyReports = async () => {
 
 export const findMyReport = async (id_item: string) => {
   const profile = await getMyProfile()
+
+  if (!profile) {
+    throw new Error("Silahkan login terlebih dahulu")
+  }
 
   const { data, error } = await createClientSupabase()
     .from("items")

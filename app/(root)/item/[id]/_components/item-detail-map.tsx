@@ -20,7 +20,7 @@ const ItemDetailMap = ({ item }: ItemDetailMapProps) => {
   )
 
   return (
-    <div className="h-72 w-full z-40 overflow-hidden rounded-lg">
+    <div className="h-72 w-full z-40 overflow-hidden">
       <Map
         position={[item.latitude, item.longitude]}
         zoom={15}

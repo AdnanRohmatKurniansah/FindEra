@@ -14,6 +14,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const data = await findReport(id)
 
+  if (!data) {
+    return {
+      title: 'Item Tidak Ditemukan | FindEra',
+      description: 'Item yang Anda cari tidak tersedia.',
+      openGraph: {
+        title: 'Item Tidak Ditemukan',
+        description: 'Item yang Anda cari tidak tersedia.',
+      }
+    }
+  }
+
   return {
     title: `Detail Item "${data.title}" | FindEra`,
     description: data.description,

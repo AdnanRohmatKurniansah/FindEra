@@ -85,12 +85,12 @@ const TentangKami = () => {
             return (
               <div key={index} className="shadow transition-all duration-200 hover:-translate-y-1.5 hover:shadow-md border text-center p-4 rounded-[10px]">
                 <div className="flex justify-center">
-                  <div className="icon p-3 bg-primary rounded-[10px]">
+                  <div className="icon p-2 md:p-3 bg-primary rounded-[10px]">
                     <Icon className="text-white" />
                   </div>
                 </div>
-                <h5 className="mt-5 mb-2 text-lg text-primary font-medium">{item.value}</h5>
-                <h6 className="mb-3 text-gray-600 text-[14px] md:text-[16px]">{item.label}</h6>
+                <h5 className="mt-5 mb-2 text-md md:text-lg text-primary font-medium">{item.value}</h5>
+                <h6 className="mb-3 text-gray-600 text-[12px] md:text-[16px]">{item.label}</h6>
               </div>
             )
           })}
