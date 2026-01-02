@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, ReactNode } from 'react'
+import { useRef, useState, ReactNode, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Send, ImageIcon, Trash2 } from 'lucide-react'
@@ -9,11 +9,11 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { chatMessage, itemUser } from '@/types'
-import { itemData } from '@/types'
 import {
   useChatRoom,
   useChatMessages,
-  useSendMessage
+  useSendMessage,
+  useMarkAsRead
 } from '@/hooks/useChats' 
 
 type ChatDialogProps = {
@@ -49,9 +49,17 @@ export const ChatDialog = ({
   }
 
   const { data: roomId } = useChatRoom(myProfileId, otherProfile.id, itemId)
-  const { data: messages = [] } = useChatMessages(open ? roomId : null)
+  const { data: messages = [] } = useChatMessages(open ? roomId : null, myProfileId)
   const { sendText, sendImage, deleteMessage } = useSendMessage(roomId, myProfileId, otherProfile.id)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const markAsRead = useMarkAsRead(roomId, myProfileId)
+
+  useEffect(() => {
+    if (!open) return
+    if (!roomId || !myProfileId) return
+
+    markAsRead.mutate()
+  }, [open, roomId])
 
   const handleOpen = () => {
     if (!requireLogin()) return
@@ -81,7 +89,7 @@ export const ChatDialog = ({
     <>
       {children && <div onClick={handleOpen}>{children}</div>}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-[10px] overflow-hidden sm:max-w-[425px] p-0 min-h-[50vh] max-h-[90vh] flex flex-col">
+        <DialogContent className="rounded-[10px] overflow-hidden sm:max-w-[425px] p-0 min-h-[70vh] max-h-[90vh] flex flex-col">
           <DialogHeader className="p-4 border-b bg-white">
             <DialogTitle>
               <div className="flex items-center gap-4">

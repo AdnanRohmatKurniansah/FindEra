@@ -123,3 +123,16 @@ export const fetchChatHistory = async (myProfileId: string) => {
     }
   }) ?? []
 }
+
+export const markMessagesAsRead = async (roomId: string, myProfileId: string) => {
+  const { error } = await createClientSupabase()
+    .from('private_messages')
+    .update(
+      { is_read: true }
+    )
+    .eq('room_id', roomId)
+    .eq('receiver_id', myProfileId)
+    .eq('is_read', false)
+
+  if (error) throw error
+}

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { deleteMessageById, fetchChatHistory, fetchMessages, getOrCreateChatRoom, sendImageMessage, sendTextMessage } from "@/service/chatRoomService"
+import { deleteMessageById, fetchChatHistory, fetchMessages, getOrCreateChatRoom, markMessagesAsRead, sendImageMessage, sendTextMessage } from "@/service/chatRoomService"
 import { createClientSupabase } from "@/lib/supabase/client"
 import { useEffect } from "react"
 import { extractStoragePath, removeFile, uploadFile } from "@/lib/supabase/storage"
@@ -20,8 +20,35 @@ export const useChatRoom = (myProfileId?: string | null, otherProfileId?: string
   })
 }
 
-export const useChatMessages = (roomId?: string | null) => {
+export const useChatMessages = (roomId?: string | null, myProfileId?: string | null) => {
   const queryClient = useQueryClient()
+
+  const markAsRead = useMarkAsRead(roomId, myProfileId)
+
+  useEffect(() => {
+    if (!roomId || !myProfileId) return
+
+    const channel = createClientSupabase()
+      .channel(`room-${roomId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'private_messages', filter: `room_id=eq.${roomId}` },
+        payload => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          queryClient.setQueryData(['chat-messages', roomId], (old: any[] = []) => [...old, payload.new])
+
+          if (payload.new.receiver_id === myProfileId) {
+            markAsRead.mutate()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      createClientSupabase().removeChannel(channel)
+    }
+  }, [roomId, myProfileId])
+
 
   const query = useQuery({
     queryKey: ['chat-messages', roomId],
@@ -123,6 +150,21 @@ export const useChatHistory = (myProfileId?: string | null) => {
       return fetchChatHistory(myProfileId)
     },
     enabled: !!myProfileId,
-    refetchInterval: 5000 
+    staleTime: Infinity
+  })
+}
+
+export const useMarkAsRead = (roomId?: string | null, myProfileId?: string | null) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => {
+      if (!roomId || !myProfileId) throw new Error('Id tidak lengkap')
+      return markMessagesAsRead(roomId, myProfileId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-history', myProfileId] })
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', roomId] })
+    }
   })
 }
