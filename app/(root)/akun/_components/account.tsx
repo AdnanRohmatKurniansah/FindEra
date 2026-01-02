@@ -21,7 +21,7 @@ const AccountProfile = () => {
 
   return (
     <>
-        <div className="border shadow-md rounded-md p-4 mb-8">
+        <div className="border shadow-md rounded-md p-4 mb-5 md:mb-8">
             <div className="relative mt-4 flex justify-center">
                 <Image  
                 src={avatarUrl}

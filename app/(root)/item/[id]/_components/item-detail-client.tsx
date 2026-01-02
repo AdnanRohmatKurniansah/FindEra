@@ -18,11 +18,10 @@ import { useFindReport } from '@/hooks/useReports'
 import { toast } from 'sonner'
 import ItemDetailMap from './item-detail-map'
 import AccountItem from './account-item'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { isValidUUID } from '@/lib/utils'
 import ItemDetailSkeleton from './item-detail-skeleton'
-import { createClientSupabase } from '@/lib/supabase/client'
 import { useProfile } from '@/hooks/useProfiles'
 
 const ItemDetailClient = ({ id }: { id: string }) => {
@@ -61,7 +60,7 @@ const ItemDetailClient = ({ id }: { id: string }) => {
   }
 
   return (
-    <section className="py-10">
+    <section className="pt-5 pb-10 md:py-10">
       <div className="mx-auto px-5 md:px-15">
         <Breadcrumb className="mb-5">
           <BreadcrumbList>
@@ -79,18 +78,18 @@ const ItemDetailClient = ({ id }: { id: string }) => {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mb-16">
           <div className="lg:col-span-2 space-y-4">
             <div className="mb-6">
-              <h1 className="text-3xl font-bold flex justify-between items-center mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold flex justify-between items-center mb-4">
                   {data.title}
                   {data.status == 'ditemukan' ? (
-                    <span className="bg-[#DCFCE7] border border-primary ms-2 flex rounded-xl items-center text-primary text-[12px] px-3 py-2">
+                    <span className="bg-[#DCFCE7] border border-primary ms-2 flex rounded-xl items-center text-primary text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
                       Status: Ditemukan
                     </span>
                   ) : data.status == 'ditutup' ? (
-                    <span className="bg-[#FFFBEB] border border-[#78350F] ms-2 flex rounded-xl items-center text-[#78350F] text-[12px] px-3 py-2">
+                    <span className="bg-[#FFFBEB] border border-[#78350F] ms-2 flex rounded-xl items-center text-[#78350F] text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
                       Status: Ditutup
                     </span>
                   ) : (
-                    <span className="bg-[#FFF2F3] border border-[#FB2C36] ms-2 flex rounded-xl items-center text-[#FB2C36] text-[12px] px-3 py-2">
+                    <span className="bg-[#FFF2F3] border border-[#FB2C36] ms-2 flex rounded-xl items-center text-[#FB2C36] text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
                       Status: Hilang
                     </span>
                   )}

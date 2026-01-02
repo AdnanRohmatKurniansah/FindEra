@@ -15,10 +15,11 @@ export const formatMonthYear = (dateString?: string | null) => {
 }
 
 export const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+    return date.toLocaleTimeString('id-ID', { 
+      timeZone: 'Asia/Jakarta',
       hour: '2-digit', 
       minute: '2-digit',
-      hour12: true 
+      hour12: false
     })
 }
 

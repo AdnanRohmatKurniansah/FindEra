@@ -1,5 +1,5 @@
 import { createClientSupabase } from "@/lib/supabase/client"
-import { changePasswordData, loginData, registerData } from "@/types"
+import { loginData, registerData } from "@/types"
 
 export const registerEmail = async (credentials: registerData) => {
   try {

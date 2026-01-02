@@ -12,7 +12,7 @@ type Props = {
 
 export const RadioCardGroup = ({ value, onChange, options }: Props) => {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-col-1 md:grid-cols-2 gap-4">
       {options.map(opt => {
         const active = value === opt.value
         return (

@@ -44,8 +44,12 @@ const ChangePasswordForm = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user) router.replace("/sign-in")
-      else if (user.app_metadata.provider !== "email") router.replace("/profile")
+      if (!user) { 
+        router.replace("/sign-in")
+      } else if (user.app_metadata.provider !== "email") {
+        toast.error("Hanya pengguna yg login dgn email yang dapat mengubah password")
+        router.replace("/akun")
+      }
     }
   }, [user, isLoading, router])
 
@@ -64,12 +68,12 @@ const ChangePasswordForm = () => {
             <Label className="mb-3">Email</Label>
             <Input defaultValue={user?.email} readOnly />
           </div>
-          <div>
+          <div className='col-span-2 md:col-span-1'>
             <Label className="mb-3">Password Baru</Label>
             <Input {...register("new_password")} type="password" placeholder="Masukkan password baru" />
             {errors.new_password && <p className="text-red-600 text-[13px] mt-1">{errors.new_password.message}</p>}
           </div>
-          <div>
+          <div className='col-span-2 md:col-span-1'>
             <Label className="mb-3">Password Lama</Label>
             <Input {...register("old_password")} type="password" placeholder="Masukkan password lama" />
             {errors.old_password && <p className="text-red-600 text-[13px] mt-1">{errors.old_password.message}</p>}

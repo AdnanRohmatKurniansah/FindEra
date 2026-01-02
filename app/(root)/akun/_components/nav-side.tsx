@@ -30,7 +30,7 @@ const NavigationSide = () => {
   }
 
   return (
-    <div className="border shadow-md rounded-md p-4 mb-4">
+    <div className="border shadow-md rounded-md p-4 mb-10 md:mb-4">
       <h2 className="font-semibold text-lg mb-4">Informasi Akun</h2>
 
       <div className="space-y-3">

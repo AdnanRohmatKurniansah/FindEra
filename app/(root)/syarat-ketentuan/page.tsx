@@ -41,7 +41,7 @@ const ketentuan = [
 
 const SyaratKetentuan = () => {
   return (
-    <section className="py-10">
+    <section className="pt-5 pb-10 md:py-10">
       <div className="mx-auto px-5 md:px-15">
         <div className="relative mb-12 rounded-2xl bg-gradient-to-r from-[#007f5f] via-[#18b18a] to-[#30d3aa] p-8 text-white overflow-hidden">
           <div className="absolute inset-0 bg-black/10" />

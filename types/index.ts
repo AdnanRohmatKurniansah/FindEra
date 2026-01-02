@@ -78,4 +78,11 @@ export type itemData = {
   profiles?: itemUser | itemUser[] | null
 }
 
-
+export type chatMessage = {
+  id: string
+  sender_id: string
+  receiver_id: string
+  message: string | null
+  image_url: string | null
+  created_at: string
+}

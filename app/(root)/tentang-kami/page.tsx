@@ -65,7 +65,7 @@ const whychoose = [
 
 const TentangKami = () => {
   return (
-    <div className="py-10">
+    <div className="pt-5 pb-10 md:py-10">
       <div className="mx-auto px-5 md:px-15">
         <div className="relative overflow-hidden bg-gradient-to-r from-[#007f5f] via-[#18b18a] to-[#30d3aa] rounded-2xl p-8 mb-8 md:mb-16 text-white">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -89,7 +89,7 @@ const TentangKami = () => {
                     <Icon className="text-white" />
                   </div>
                 </div>
-                <h5 className="mt-5 mb-2 text-md md:text-lg text-primary font-medium">{item.value}</h5>
+                <h5 className="mt-3 md:mt-5 mb-2 text-md md:text-lg text-primary font-medium">{item.value}</h5>
                 <h6 className="mb-3 text-gray-600 text-[12px] md:text-[16px]">{item.label}</h6>
               </div>
             )

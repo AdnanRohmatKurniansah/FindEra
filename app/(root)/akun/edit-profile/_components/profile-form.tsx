@@ -66,11 +66,11 @@ const ProfileForm = () => {
                   <p className="text-red-600 text-[13px] mt-1 mb-0 pb-0">{errors.name?.message}</p>
                 )}
             </div>
-            <div>
+            <div className='col-span-2 md:col-span-1'>
                 <Label className='mb-3'>Email</Label>
                 <Input value={user?.email} readOnly />
             </div>
-            <div>
+            <div className='col-span-2 md:col-span-1'>
                 <Label className='mb-3'>Nomer Telp</Label>
                 <Input {...register("phone")} defaultValue={profile?.phone || ''} />
                 {errors.phone && (

@@ -1,53 +1,43 @@
 'use client'
 
-import { useEffect, useRef, useState, ReactNode } from 'react'
+import { useRef, useState, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Send, ImageIcon, Trash2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
-import { createClientSupabase } from '@/lib/supabase/client'
 import Image from 'next/image'
-import { uploadFile, extractStoragePath, removeFile } from '@/lib/supabase/storage'
-import { getOrCreateChatRoom } from '@/service/chatRoomService'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-
-type ChatMessage = {
-  id: string
-  sender_id: string
-  receiver_id: string
-  message: string | null
-  image_url: string | null
-  created_at: string
-}
+import { chatMessage, itemUser } from '@/types'
+import { itemData } from '@/types'
+import {
+  useChatRoom,
+  useChatMessages,
+  useSendMessage
+} from '@/hooks/useChats' 
 
 type ChatDialogProps = {
   myProfileId: string | null
-  otherProfileId: string
-  reporterName?: string
+  otherProfile: itemUser
+  itemId: string
+  itemStatus: string
   defaultMessage?: string
   children?: ReactNode
 }
 
 export const ChatDialog = ({
   myProfileId,
-  otherProfileId,
-  reporterName = 'User',
+  otherProfile,
+  itemId,
+  itemStatus,
   defaultMessage,
   children
 }: ChatDialogProps) => {
-  const supabase = createClientSupabase()
   const router = useRouter()
-
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState(defaultMessage ?? '')
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentRoomId, setCurrentRoomId] = useState<string | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
   const requireLogin = () => {
     if (!myProfileId) {
@@ -58,117 +48,81 @@ export const ChatDialog = ({
     return true
   }
 
-  useEffect(() => {
-    if (!open || !currentRoomId) return
+  const { data: roomId } = useChatRoom(myProfileId, otherProfile.id, itemId)
+  const { data: messages = [] } = useChatMessages(open ? roomId : null)
+  const { sendText, sendImage, deleteMessage } = useSendMessage(roomId, myProfileId, otherProfile.id)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
-    supabase
-      .from('private_messages')
-      .select('*')
-      .eq('room_id', currentRoomId)
-      .order('created_at', { ascending: true })
-      .then(({ data }) => data && setMessages(data))
-  }, [open, currentRoomId])
-
-  useEffect(() => {
-    if (!open || !currentRoomId) return
-
-    const channel = supabase
-      .channel(`room-${currentRoomId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'private_messages', filter: `room_id=eq.${currentRoomId}` },
-        payload => setMessages(prev => [...prev, payload.new as ChatMessage])
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'private_messages', filter: `room_id=eq.${currentRoomId}` },
-        payload => setMessages(prev => prev.filter(m => m.id !== payload.old.id))
-      )
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [open, currentRoomId])
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
-  }, [messages])
-
-  const openDialog = () => {
+  const handleOpen = () => {
     if (!requireLogin()) return
     setOpen(true)
   }
 
-  const ensureRoom = async () => {
-    if (!currentRoomId) {
-      const room = await getOrCreateChatRoom(myProfileId!, otherProfileId)
-      setCurrentRoomId(room)
-      return room
+  const handleSend = () => {
+    if (!input.trim() && !selectedImage) return
+
+    if (selectedImage) {
+      sendImage.mutate(
+        { file: selectedImage, message: input.trim() },
+        {
+          onSuccess: () => {
+            setInput('')
+            setSelectedImage(null)
+          }
+        }
+      )
+    } else {
+      sendText.mutate(input.trim())
+      setInput('')
     }
-    return currentRoomId
-  }
-
-  const sendMessage = async () => {
-    if (!input.trim()) return
-    const room = await ensureRoom()
-    await supabase.from('private_messages').insert({
-      room_id: room,
-      sender_id: myProfileId,
-      receiver_id: otherProfileId,
-      message: input.trim(),
-      image_url: null
-    })
-    setInput('')
-  }
-
-  const sendImage = async (file: File) => {
-    const room = await ensureRoom()
-    const path = `${room}/${Date.now()}-${file.name}`
-    const url = await uploadFile('chat-images', path, file)
-
-    await supabase.from('private_messages').insert({
-      room_id: room,
-      sender_id: myProfileId,
-      receiver_id: otherProfileId,
-      image_url: url,
-      message: null
-    })
-  }
-
-  const deleteMessage = async (msg: ChatMessage) => {
-    if (msg.sender_id !== myProfileId) return
-
-    if (msg.image_url) {
-      const path = extractStoragePath(msg.image_url, 'chat-images')
-      if (path) await removeFile('chat-images', [path])
-    }
-
-    await supabase.from('private_messages').delete().eq('id', msg.id)
   }
 
   return (
     <>
-      {children && <div onClick={openDialog}>{children}</div>}
-
+      {children && <div onClick={handleOpen}>{children}</div>}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl w-full p-0 max-h-[90vh] flex flex-col">
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle>{reporterName}</DialogTitle>
+        <DialogContent className="rounded-[10px] overflow-hidden sm:max-w-[425px] p-0 min-h-[50vh] max-h-[90vh] flex flex-col">
+          <DialogHeader className="p-4 border-b bg-white">
+            <DialogTitle>
+              <div className="flex items-center gap-4">
+                <Image
+                  src={otherProfile.image || '/images/avatar.png'}
+                  width={35}
+                  height={35}
+                  alt=""
+                  className="rounded-full"
+                />
+                <div>
+                  <div className="text-[14px] font-semibold">{otherProfile.name}</div>
+                  <div className="text-sm text-start font-normal text-gray-500">
+                    {itemStatus === 'hilang' ? 'Pencari' : 'Penemu'}
+                  </div>
+                </div>
+              </div>
+            </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            <div className="space-y-3">
-              {messages.map(m => (
+          <div className="flex-1 p-4 overflow-y-auto" >
+            <div  className="space-y-3">
+              {messages.map((m: chatMessage) => (
                 <div key={m.id} className={`flex ${m.sender_id === myProfileId ? 'justify-end' : 'justify-start'}`}>
-                  <div className="relative group max-w-[70%]">
-                    <div className={`rounded-xl px-3 py-2 text-sm ${m.sender_id === myProfileId ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
-                      {m.image_url && <Image src={m.image_url} alt="" width={200} height={200} className="rounded mb-1" />}
+                  <div className="relative group max-w-[70%] mt-1 mr-1">
+                    <div
+                      className={`rounded-xl px-3 py-2 text-sm ${
+                        m.sender_id === myProfileId ? 'bg-primary text-white' : 'bg-gray-100'
+                      }`}>
+                      {m.image_url && (
+                        <Image src={m.image_url} alt="" width={200} height={200} className="rounded mb-1" />
+                      )}
                       {m.message}
-                      <div className="text-[10px] opacity-70 mt-1 text-right">{formatTime(new Date(m.created_at))}</div>
+                      <div className="text-[10px] opacity-70 mt-1 text-right">
+                        {formatTime(new Date(m.created_at))}
+                      </div>
                     </div>
 
                     {m.sender_id === myProfileId && (
                       <button
-                        onClick={() => deleteMessage(m)}
+                        onClick={() => deleteMessage.mutate(m)}
                         className="absolute -top-2 -right-2 hidden group-hover:flex bg-white border rounded-full p-1 shadow"
                       >
                         <Trash2 className="w-3 h-3 text-red-500" />
@@ -178,21 +132,54 @@ export const ChatDialog = ({
                 </div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
 
-          <div className="p-3 border-t bg-gray-50 flex gap-2">
-            <button onClick={() => fileRef.current?.click()}><ImageIcon className="w-5 h-5" /></button>
-            <input type="file" hidden ref={fileRef} accept="image/*" onChange={e => e.target.files && sendImage(e.target.files[0])} />
+          {selectedImage && (
+            <div className="p-2">
+              <div className="relative w-fit">
+                <Image
+                  src={URL.createObjectURL(selectedImage)}
+                  alt=""
+                  width={60}
+                  height={60}
+                  className="rounded"
+                />
+                <button
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 border-t bg-gray-50 shadow-md flex gap-2">
+            <button onClick={() => fileRef.current?.click()}>
+              <ImageIcon className="w-5 h-5" />
+            </button>
+            <input
+              type="file"
+              hidden
+              ref={fileRef}
+              accept="image/*"
+              onChange={e => {
+                const file = e.target.files?.[0]
+                if (file) setSelectedImage(file)
+              }}
+            />
 
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
               className="flex-1 border rounded-full px-4 py-2 text-sm"
               placeholder="Ketik pesan..."
             />
 
-            <Button size="icon" onClick={sendMessage}><Send className="w-4 h-4" /></Button>
+            <Button size="icon" onClick={handleSend}>
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

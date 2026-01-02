@@ -86,12 +86,13 @@ const Navbar = ({
   const router = useRouter()
   const [search, setSearch] = useState('')
   const searchParam = params.get("search") || ""
+  const [open, setOpen] = useState(false)
 
-    const { data: profile } = useProfile()
+  const { data: profile } = useProfile()
 
-    useEffect(() => {
-      setSearch(searchParam)
-    }, [searchParam])
+  useEffect(() => {
+    setSearch(searchParam)
+  }, [searchParam])
 
   const handleSearch = (
     e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLInputElement>
@@ -112,7 +113,7 @@ const Navbar = ({
   }
 
   return (
-    <section className="sticky top-0 z-50 bg-white py-2 px-5 md:px-14 border-b shadow-sm">
+    <section className="sticky top-0 z-50 bg-white py-3 md:py-2 px-5 md:px-14 border-b shadow-sm">
       <div className="container-fluid">
         <nav className="hidden lg:flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 w-full">
@@ -164,7 +165,7 @@ const Navbar = ({
         <div className="block lg:hidden">
           <div className="flex items-center justify-between">
             <div className="flex justify-start items-center gap-3">
-              <Sheet>
+              <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                   <Button className="border-primary" variant="outline" size="icon">
                     <Menu className="size-4 text-primary" />
@@ -184,7 +185,7 @@ const Navbar = ({
                       collapsible
                       className="flex w-full flex-col gap-4"
                     >
-                      {menu.map((item) => renderMobileMenuItem(item))}
+                      {menu.map((item) => renderMobileMenuItem(item, pathname, setOpen))}
                     </Accordion>
 
                     <div className="flex flex-col gap-3">
@@ -263,7 +264,9 @@ const renderMenuItem = (item: MenuItem, pathname: string) => {
   );
 };
 
-const renderMobileMenuItem = (item: MenuItem) => {
+const renderMobileMenuItem = (item: MenuItem, pathname: string, setOpen: (v: boolean) => void) => {
+  const isActive = pathname === item.url
+
   if (item.items) {
     return (
       <AccordionItem key={item.title} value={item.title} className="border-b-0">
@@ -272,7 +275,11 @@ const renderMobileMenuItem = (item: MenuItem) => {
         </AccordionTrigger>
         <AccordionContent className="mt-2">
           {item.items.map((subItem) => (
-            <SubMenuLink key={subItem.title} item={subItem} />
+            <SubMenuLink
+              key={subItem.title}
+              item={subItem}
+              onClick={() => setOpen(false)}
+            />
           ))}
         </AccordionContent>
       </AccordionItem>
@@ -280,17 +287,19 @@ const renderMobileMenuItem = (item: MenuItem) => {
   }
 
   return (
-    <Link key={item.title} href={item.url} className="text-md font-semibold group">
+    <Link key={item.title} href={item.url} onClick={() => setOpen(false)}
+      className={`text-md font-semibold group transition-colors hover:no-underline
+        ${isActive ? "text-primary font-semibold" : ""}`}>
       {item.title}
     </Link>
   );
 };
 
-const SubMenuLink = ({ item }: { item: MenuItem }) => {
+const SubMenuLink = ({ item, onClick }: { item: MenuItem, onClick?: () => void }) => {
   return (
-    <a
+    <Link
       className="flex flex-row gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-muted hover:text-accent-foreground"
-      href={item.url}
+      href={item.url} onClick={onClick}
     >
       <div className="text-foreground">{item.icon}</div>
       <div>
@@ -301,7 +310,7 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
           </p>
         )}
       </div>
-    </a>
+    </Link>
   );
 };
 
