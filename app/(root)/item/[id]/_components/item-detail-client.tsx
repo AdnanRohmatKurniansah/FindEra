@@ -88,6 +88,10 @@ const ItemDetailClient = ({ id }: { id: string }) => {
                     <span className="bg-[#FFFBEB] border border-[#78350F] ms-2 flex rounded-xl items-center text-[#78350F] text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
                       Status: Ditutup
                     </span>
+                  ) : data.status == 'diklaim' ? (
+                    <span className="bg-blue-200 border border-blue-500 ms-2 flex rounded-xl items-center text-blue-500 text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
+                      Status: Ditutup
+                    </span>
                   ) : (
                     <span className="bg-[#FFF2F3] border border-[#FB2C36] ms-2 flex rounded-xl items-center text-[#FB2C36] text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2">
                       Status: Hilang

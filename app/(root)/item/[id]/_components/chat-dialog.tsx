@@ -3,7 +3,7 @@
 import { useRef, useState, ReactNode, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Send, ImageIcon, Trash2 } from 'lucide-react'
+import { Send, ImageIcon, Trash2, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/utils'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -13,13 +13,16 @@ import {
   useChatRoom,
   useChatMessages,
   useSendMessage,
-  useMarkAsRead
-} from '@/hooks/useChats' 
+  useMarkAsRead,
+  useMarkAsOwner
+} from '@/hooks/useChats'
+import FinishWithClaim from '@/app/(root)/akun/_components/finish-with-claim'
 
 type ChatDialogProps = {
   myProfileId: string | null
   otherProfile: itemUser
   itemId: string
+  itemUserId: string
   itemStatus: string
   defaultMessage?: string
   children?: ReactNode
@@ -29,6 +32,7 @@ export const ChatDialog = ({
   myProfileId,
   otherProfile,
   itemId,
+  itemUserId,
   itemStatus,
   defaultMessage,
   children
@@ -36,8 +40,10 @@ export const ChatDialog = ({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState(defaultMessage ?? '')
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const requireLogin = () => {
     if (!myProfileId) {
@@ -51,39 +57,75 @@ export const ChatDialog = ({
   const { data: roomId } = useChatRoom(myProfileId, otherProfile.id, itemId)
   const { data: messages = [] } = useChatMessages(open ? roomId : null, myProfileId)
   const { sendText, sendImage, deleteMessage } = useSendMessage(roomId, myProfileId, otherProfile.id)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const markAsRead = useMarkAsRead(roomId, myProfileId)
 
-  useEffect(() => {
-    if (!open) return
-    if (!roomId || !myProfileId) return
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const markAsOwnerMutation = useMarkAsOwner()
+  const canMarkAsOwner =
+    myProfileId == itemUserId &&
+    (itemStatus == 'ditemukan' || itemStatus == 'hilang')
 
-    markAsRead.mutate()
-  }, [open, roomId])
+  const otherProfileId = otherProfile?.id
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  useEffect(() => {
+    if (!open || !roomId || !myProfileId) return
+
+    const hasUnreadMessages = messages.some(
+      (m: chatMessage) => !m.is_read && m.receiver_id === myProfileId && m.sender_id !== myProfileId
+    )
+
+    if (hasUnreadMessages) {
+      const timer = setTimeout(() => {
+        markAsRead.mutate()
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [open, roomId, myProfileId, messages, markAsRead])
 
   const handleOpen = () => {
     if (!requireLogin()) return
     setOpen(true)
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() && !selectedImage) return
+    if (sendText.isPending || sendImage.isPending) return
 
-    if (selectedImage) {
-      sendImage.mutate(
-        { file: selectedImage, message: input.trim() },
-        {
-          onSuccess: () => {
-            setInput('')
-            setSelectedImage(null)
-          }
-        }
-      )
-    } else {
-      sendText.mutate(input.trim())
-      setInput('')
+    const messageToSend = input.trim()
+    const imageToSend = selectedImage
+
+    setInput('')
+    setSelectedImage(null)
+
+    try {
+      if (imageToSend) {
+        await sendImage.mutateAsync({ file: imageToSend, message: messageToSend })
+      } else {
+        await sendText.mutateAsync(messageToSend)
+      }
+    } catch (error) {
+      toast.error('Gagal mengirim pesan')
+      setInput(messageToSend)
+      if (imageToSend) setSelectedImage(imageToSend)
     }
   }
+
+  const handleDeleteMessage = (msg: chatMessage) => {
+    if (deleteMessage.isPending) return
+    
+    deleteMessage.mutate(msg, {
+      onError: () => {
+        toast.error('Gagal menghapus pesan')
+      }
+    })
+  }
+
+  const isSending = sendText.isPending || sendImage.isPending
 
   return (
     <>
@@ -92,46 +134,73 @@ export const ChatDialog = ({
         <DialogContent className="rounded-[10px] overflow-hidden sm:max-w-[425px] p-0 min-h-[70vh] max-h-[90vh] flex flex-col">
           <DialogHeader className="p-4 border-b bg-white">
             <DialogTitle>
-              <div className="flex items-center gap-4">
-                <Image
-                  src={otherProfile.image || '/images/avatar.png'}
-                  width={35}
-                  height={35}
-                  alt=""
-                  className="rounded-full"
-                />
-                <div>
-                  <div className="text-[14px] font-semibold">{otherProfile.name}</div>
-                  <div className="text-sm text-start font-normal text-gray-500">
-                    {itemStatus === 'hilang' ? 'Pencari' : 'Penemu'}
+              <div className="flex justify-between">
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={otherProfile.image || '/images/avatar.png'}
+                    width={35}
+                    height={35}
+                    alt={otherProfile.name || 'Avatar'}
+                    className="rounded-full"
+                  />
+                  <div>
+                    <div className="text-[14px] font-semibold">{otherProfile.name}</div>
+                    <div className="text-sm text-start font-normal text-gray-500">
+                      User
+                    </div>
                   </div>
                 </div>
+                {canMarkAsOwner && (
+                  <div className="mark-as-owner mr-7">
+                    <Button className="text-xs" size="sm"
+                      onClick={() => setConfirmOpen(true)}>
+                      Konfirmasi Selesai
+                    </Button>
+                  </div>
+                )}
               </div>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 p-4 overflow-y-auto" >
-            <div  className="space-y-3">
-              {messages.map((m: chatMessage) => (
-                <div key={m.id} className={`flex ${m.sender_id === myProfileId ? 'justify-end' : 'justify-start'}`}>
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="space-y-3">
+              {messages.map((m) => (
+                <div key={m.id || m.tempId} className={`flex ${m.sender_id === myProfileId ? 'justify-end' : 'justify-start'}`}>
                   <div className="relative group max-w-[70%] mt-1 mr-1">
                     <div
                       className={`rounded-xl px-3 py-2 text-sm ${
                         m.sender_id === myProfileId ? 'bg-primary text-white' : 'bg-gray-100'
-                      }`}>
+                      } ${m.tempId ? 'opacity-70' : 'opacity-100'}`}>
                       {m.image_url && (
-                        <Image src={m.image_url} alt="" width={200} height={200} className="rounded mb-1" />
+                        <div className="relative">
+                          <Image 
+                            src={m.image_url} 
+                            alt="" 
+                            width={200} 
+                            height={200} 
+                            className={`rounded mb-1 ${m.isUploading ? 'opacity-50' : ''}`} 
+                          />
+                          {m.isUploading && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Loader2 className="w-6 h-6 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
                       )}
-                      {m.message}
-                      <div className="text-[10px] opacity-70 mt-1 text-right">
-                        {formatTime(new Date(m.created_at))}
+                      {m.message && <div>{m.message}</div>}
+                      <div className="flex items-center gap-2 text-[10px] opacity-70 mt-1 text-right">
+                        {m.tempId && (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        )}
+                        <span>{formatTime(new Date(m.created_at))}</span>
                       </div>
                     </div>
 
-                    {m.sender_id === myProfileId && (
+                    {m.sender_id === myProfileId && !m.tempId && (
                       <button
-                        onClick={() => deleteMessage.mutate(m)}
-                        className="absolute -top-2 -right-2 hidden group-hover:flex bg-white border rounded-full p-1 shadow"
+                        onClick={() => handleDeleteMessage(m)}
+                        disabled={deleteMessage.isPending}
+                        className="absolute -top-2 -right-2 hidden group-hover:flex bg-white border rounded-full p-1 shadow disabled:opacity-50 hover:bg-red-50 transition"
                       >
                         <Trash2 className="w-3 h-3 text-red-500" />
                       </button>
@@ -139,22 +208,24 @@ export const ChatDialog = ({
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
           </div>
 
           {selectedImage && (
-            <div className="p-2">
+            <div className="p-2 border-t bg-gray-50">
               <div className="relative w-fit">
                 <Image
                   src={URL.createObjectURL(selectedImage)}
-                  alt=""
-                  width={60}
-                  height={60}
-                  className="rounded"
+                  alt="Preview"
+                  width={80}
+                  height={80}
+                  className="rounded object-cover"
                 />
                 <button
                   onClick={() => setSelectedImage(null)}
-                  className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1 text-xs"
+                  disabled={isSending}
+                  className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1 text-xs hover:bg-gray-100 transition disabled:opacity-50"
                 >
                   ✕
                 </button>
@@ -162,8 +233,12 @@ export const ChatDialog = ({
             </div>
           )}
 
-          <div className="p-3 border-t bg-gray-50 shadow-md flex gap-2">
-            <button onClick={() => fileRef.current?.click()}>
+          <div className="p-3 border-t bg-gray-50 shadow-md flex gap-2 items-center">
+            <button 
+              onClick={() => fileRef.current?.click()}
+              disabled={isSending}
+              className="p-2 hover:bg-gray-200 rounded-full transition disabled:opacity-50"
+            >
               <ImageIcon className="w-5 h-5" />
             </button>
             <input
@@ -180,17 +255,57 @@ export const ChatDialog = ({
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
-              className="flex-1 border rounded-full px-4 py-2 text-sm"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
+              disabled={isSending}
+              className="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:bg-gray-100"
               placeholder="Ketik pesan..."
             />
 
-            <Button size="icon" onClick={handleSend}>
-              <Send className="w-4 h-4" />
+            <Button 
+              size="icon" 
+              onClick={handleSend}
+              disabled={isSending || (!input.trim() && !selectedImage)}
+              className="shrink-0"
+            >
+              {isSending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <FinishWithClaim
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        isLoading={markAsOwnerMutation.isPending}
+        onConfirm={() => {
+          if (!myProfileId || !otherProfileId) return
+          markAsOwnerMutation.mutate(
+            {
+              itemId,
+              otherProfileId,
+            },
+            {
+              onSuccess: () => {
+                toast.success('Item berhasil diklaim/ditemukan')
+                setConfirmOpen(false)
+              },
+              onError: (err) => {
+                console.error(err)
+                toast.error('Gagal menandai item')
+              }
+            }
+          )
+        }}
+      />
     </>
   )
 }

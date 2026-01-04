@@ -14,12 +14,18 @@ const AccountProfileSkeleton = () => {
         </div>
       </div>
 
+      <div className="border shadow-md rounded-md p-4 animate-pulse mb-4">
+        <Skeleton className="h-5 w-40 mb-4" />
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-52" />
+        </div>
+      </div>
       <div className="border shadow-md rounded-md p-4 animate-pulse">
         <Skeleton className="h-5 w-40 mb-4" />
         <div className="space-y-4">
+          <Skeleton className="h-10 w-52" />
           <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-10 w-44" />
+          <Skeleton className="h-10 w-48" />
         </div>
       </div>
     </>

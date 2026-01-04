@@ -47,6 +47,13 @@ const FilterBar = () => {
           Ditemukan
         </Button>
 
+        <Button
+          variant={status === "diklaim" ? "default" : "outline"}
+          onClick={() => setFilter("status", "diklaim")}
+        >
+          Diklaim
+        </Button>
+
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="w-24 h-9 rounded-md" />

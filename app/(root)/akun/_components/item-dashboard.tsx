@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { useDeleteReport } from '@/hooks/useReports'
 import { formatMonthYear } from '@/lib/utils'
 import { itemData } from '@/types'
-import { Calendar, Edit2Icon, EyeIcon, MapPin, Search, Trash2Icon } from 'lucide-react'
+import { Calendar, Check, DoorClosed, Edit2Icon, EyeIcon, MapPin, Search, Trash2Icon, User } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -44,11 +44,19 @@ const ItemDashboard = ({ item }: {item: itemData}) => {
               <Badge className="px-2 py-1 bg-red-500 font-bold">
                 <Search className="w-3 me-1" /> Hilang
               </Badge>
-            ) : (
-              <Badge className="px-2 py-1 bg-blue-500 font-bold">
-                <Search className="w-3 me-1" /> Ditemukan
+            ) : item.status == 'ditemukan' ? (
+              <Badge className="px-2 py-1 bg-primary font-bold">
+                <Check className="w-3 me-1" /> Ditemukan
               </Badge>
-            )}
+            ) : item.status == 'diklaim' ? (
+              <Badge className="px-2 py-1 bg-blue-500 font-bold">
+                <User className="w-3 me-1" /> Diklaim
+              </Badge>
+            ) : item.status == 'ditutup' ? (
+              <Badge className="px-2 py-1 bg-[#78350F] font-bold">
+                <DoorClosed className="w-3 me-1" /> Ditutup
+              </Badge>
+            ) : null}
           </div>
           <div className="absolute right-2 top-2">
             <Badge className="px-2 py-1 bg-black-transparent">

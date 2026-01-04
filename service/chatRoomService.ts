@@ -1,4 +1,5 @@
 import { createClientSupabase } from '@/lib/supabase/client'
+import { rewardConfirmClaim, rewardFindItem } from './rewardService'
 
 export const getOrCreateChatRoom = async (myProfileId: string, otherProfileId: string, item_id: string) => {
   const { data: existingRoom } = await createClientSupabase()
@@ -125,14 +126,66 @@ export const fetchChatHistory = async (myProfileId: string) => {
 }
 
 export const markMessagesAsRead = async (roomId: string, myProfileId: string) => {
-  const { error } = await createClientSupabase()
+  const { data, error } = await createClientSupabase()
     .from('private_messages')
-    .update(
-      { is_read: true }
-    )
+    .update({ is_read: true })
     .eq('room_id', roomId)
     .eq('receiver_id', myProfileId)
     .eq('is_read', false)
+    .select()
 
   if (error) throw error
+  
+  return { 
+    count: data?.length || 0,
+    data 
+  }
 }
+
+export const confirmFinishedWithClaim = async (itemId: string, otherProfileId: string) => {
+  try {
+    const { data: item, error: itemError } = await createClientSupabase()
+      .from("items")
+      .select("id, id_user, status")
+      .eq("id", itemId)
+      .single()
+
+    if (itemError || !item) throw itemError || new Error("Item tidak ditemukan")
+
+    let ownerId: string
+    let finderId: string
+
+    if (item.status === "hilang") {
+      ownerId = item.id_user
+      finderId = otherProfileId
+    } else if (item.status === "ditemukan") {
+      finderId = item.id_user
+      ownerId = otherProfileId
+    } else {
+      throw new Error("Item tidak bisa diklaim")
+    }
+
+    const { error: updateError } = await createClientSupabase()
+      .from("items")
+      .update({ status: "diklaim" })
+      .eq("id", itemId)
+
+    if (updateError) throw updateError
+
+    const { error: insertClaimError } = await createClientSupabase().from("claims").insert({
+      item_id: itemId,
+      owner_id: ownerId,
+      finder_id: finderId,
+    })
+
+    if (insertClaimError) throw insertClaimError  
+
+    await rewardFindItem(itemId, 10, finderId)
+    await rewardConfirmClaim(itemId, 2, ownerId)
+
+    return true
+  } catch (err) {
+    throw err
+  }
+}
+

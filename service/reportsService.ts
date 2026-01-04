@@ -308,3 +308,21 @@ export const findMyReport = async (id_item: string) => {
 
   return data
 }
+
+export const fetchClaimHistory = async (myProfileId: string) => {
+  const { data, error } = await createClientSupabase()
+    .from("claims")
+    .select(`
+      id,
+      created_at,
+      owner:owner_id(id, name, image),
+      finder:finder_id(id, name, image),
+      item:item_id(id, title, status, image_url, location_text, report_date)
+    `)
+    .or(`owner_id.eq.${myProfileId},finder_id.eq.${myProfileId}`)
+    .order("created_at", { ascending: false })
+
+  if (error) throw error
+
+  return data || []
+}

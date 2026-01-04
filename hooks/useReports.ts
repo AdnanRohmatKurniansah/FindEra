@@ -1,5 +1,6 @@
 import { createClientSupabase } from "@/lib/supabase/client"
-import { createReport, deleteReport, findReport, getMyReports, getReports, updateReport } from "@/service/reportsService"
+import { createReport, deleteReport, fetchClaimHistory, findReport, getMyReports, getReports, updateReport } from "@/service/reportsService"
+import { fetchRewardHistory } from "@/service/rewardService"
 import { createReportData } from "@/types"
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams } from "next/navigation"
@@ -96,5 +97,29 @@ export const useReportsSummary = () => {
         found: found ?? 0,
       }
     },
+  })
+}
+
+export const useClaimHistory = (myProfileId?: string | null) => {
+  return useQuery({
+    queryKey: ["claim-history", myProfileId],
+    queryFn: () => {
+      if (!myProfileId) throw new Error("Profile ID tidak tersedia")
+      return fetchClaimHistory(myProfileId)
+    },
+    enabled: !!myProfileId,
+    staleTime: 60 * 1000,
+  })
+}
+
+export const useRewardHistory = (myProfileId?: string | null) => {
+  return useQuery({
+    queryKey: ["reward-history", myProfileId],
+    queryFn: () => {
+      if (!myProfileId) throw new Error("Profile ID tidak tersedia")
+      return fetchRewardHistory(myProfileId)
+    },
+    enabled: !!myProfileId,
+    staleTime: 60 * 1000,
   })
 }

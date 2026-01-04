@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Calendar, Heart, MapPin, Search } from 'lucide-react'
+import { ArrowRight, Calendar, Check, DoorClosed, Heart, MapPin, Search, User } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { itemData } from '../../../types/index';
@@ -21,20 +21,25 @@ const ItemsCard = ({ item }: {item: itemData}) => {
           <Link href={`/item/${item.id}`}>
             <Image alt={item.title} src={item.image_url} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
           </Link>
-
-          {/* Badges */}
           <div className="absolute left-2 top-2">
             {item.status == 'hilang' ? (
               <Badge className="px-2 py-1 bg-red-500 font-bold">
                 <Search className="w-3 me-1" /> Hilang
               </Badge>
-            ) : (
-              <Badge className="px-2 py-1 bg-blue-500 font-bold">
-                <Search className="w-3 me-1" /> Ditemukan
+            ) : item.status == 'ditemukan' ? (
+              <Badge className="px-2 py-1 bg-primary font-bold">
+                <Check className="w-3 me-1" /> Ditemukan
               </Badge>
-            )}
+            ) : item.status == 'diklaim' ? (
+              <Badge className="px-2 py-1 bg-blue-500 font-bold">
+                <User className="w-3 me-1" /> Diklaim
+              </Badge>
+            ) : item.status == 'ditutup' ? (
+              <Badge className="px-2 py-1 bg-[#78350F] font-bold">
+                <DoorClosed className="w-3 me-1" /> Ditutup
+              </Badge>
+            ) : null}
           </div>
-
           <div className="absolute right-2 top-2">
             <Badge className="px-2 py-1 bg-black-transparent">
               <Calendar className="w-3 me-1" /> {formatMonthYear(item.report_date)}

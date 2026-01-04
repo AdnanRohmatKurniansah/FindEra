@@ -84,5 +84,6 @@ export type chatMessage = {
   receiver_id: string
   message: string | null
   image_url: string | null
+  is_read: boolean
   created_at: string
 }

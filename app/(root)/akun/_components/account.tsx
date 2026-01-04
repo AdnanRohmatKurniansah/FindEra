@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { Check, Lock, Mail, Phone, Verified } from "lucide-react"
+import { Check, Lock, Mail, Phone, Star, Verified } from "lucide-react"
 import { formatMonthYear } from "@/lib/utils"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -45,10 +45,20 @@ const AccountProfile = () => {
             </div>
         </div>
         <div className="border shadow-md rounded-md p-4 mb-4">
+            <div className="flex justify-between items-center border-b pb-3">
+                <h2 className="font-semibold text-lg">Reward Points</h2>
+                <Star className="w-5 text-yellow-500" />
+            </div>
+            <div className="mt-4 text-center">
+                <p className="text-3xl font-bold text-primary">{profile.points}</p>
+                <p className="text-gray-600 text-sm mt-1">Total poin yang kamu miliki</p>
+            </div>
+        </div>
+        <div className="border shadow-md rounded-md p-4 mb-4">
             <div className="text-start">
                 <div className="flex justify-between border-b-2 pb-3">
                     <h2 className="font-semibold text-lg">Contact Information</h2>
-                    <Lock className="w-5 text-gray-600" />
+                    <Lock className="w-5 text-blue-900" />
                 </div>
                 <div className="info pt-3">
                     <div className="mail mb-5 border-b-2 pb-3">
