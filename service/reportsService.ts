@@ -31,7 +31,7 @@ export const getReports = async (page = 1, limit = 6,
         created_at,
         updated_at,
         profiles ( id, name, image ),
-        categories!inner ( id, name )
+        categories ( id, name )
       `,
       { count: "exact" }
     )
