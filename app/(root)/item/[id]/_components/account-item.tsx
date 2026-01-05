@@ -91,6 +91,7 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
               otherProfile={profile}
               itemStatus={data.status}
               itemId={data.id}
+              itemTitle={data.title}
               itemUserId={profile.id}
               defaultMessage="Saya ingin mengklaim barang ini...">
               <Button className="w-full">
@@ -109,7 +110,7 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
             </Link>
           </Button>
         ): (
-          <ChatDialog myProfileId={myProfileId} otherProfile={profile} itemStatus={data.status} itemId={data.id} itemUserId={profile.id}>
+          <ChatDialog myProfileId={myProfileId} otherProfile={profile} itemStatus={data.status} itemId={data.id} itemTitle={data.title} itemUserId={profile.id}>
             <Button variant={'outline'} className="w-full">
               <MessageCircle className="mr-2" /> Kirim Pesan
             </Button>

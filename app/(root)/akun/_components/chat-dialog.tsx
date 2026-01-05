@@ -22,6 +22,7 @@ type ChatDialogProps = {
   myProfileId: string | null
   otherProfile: itemUser
   itemId: string
+  itemTitle: string
   itemUserId: string
   itemStatus: string
   defaultMessage?: string
@@ -32,6 +33,7 @@ export const ChatDialog = ({
   myProfileId,
   otherProfile,
   itemId,
+  itemTitle,
   itemUserId,
   itemStatus,
   defaultMessage,
@@ -163,6 +165,7 @@ export const ChatDialog = ({
             </DialogTitle>
           </DialogHeader>
 
+          <span className='mx-4 text-center text-black text-[14px] py-2 shadow-lg rounded-[10px] border'>{itemTitle}</span>
           <div className="flex-1 p-4 overflow-y-auto">
             <div className="space-y-3">
               {messages.map((m) => (

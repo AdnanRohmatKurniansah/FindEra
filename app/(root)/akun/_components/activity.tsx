@@ -318,6 +318,7 @@ const Activity = () => {
                           myProfileId={myProfileId}
                           otherProfile={other}
                           itemId={itemId}
+                          itemTitle={item?.title}
                           itemUserId={item?.id_user}
                           itemStatus={item?.status}>
                           <div className="flex items-center justify-between p-3 rounded-lg border shadow-sm hover:bg-gray-50 transition cursor-pointer">
