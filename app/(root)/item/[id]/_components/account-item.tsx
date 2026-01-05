@@ -4,10 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatMonthYear } from '@/lib/utils'
 import { itemData } from '@/types'
-import { Edit2Icon, Hand, Info, MessageCircle, Shield, Trash2Icon } from 'lucide-react'
+import { DoorClosed, Edit2Icon, Hand, Info, MessageCircle, Shield, Trash2Icon } from 'lucide-react'
 import Image from 'next/image'
-import { ChatDialog } from './chat-dialog'
+import { ChatDialog } from '../../../akun/_components/chat-dialog'
 import Link from 'next/link'
+import { useConfirmClosed } from '@/hooks/useReports'
+import ConfirmCloseItem from './confirm-close-item'
+import { toast } from 'sonner'
+import { useState } from 'react'
 
 const claimSteps = [
   { title: 'Kirim Bukti Kepemilikan', description: 'Unggah foto atau detail unik yang hanya diketahui pemilik asli.' },
@@ -42,7 +46,14 @@ type AccountItemProps = {
 }
 
 const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
+  const [open, setOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   const profile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
+  const confirmClosedMutation = useConfirmClosed()
+
+  const isOwner = myProfileId === data.id_user
+  const isClosedOrClaimed = ['diklaim', 'ditutup'].includes(data.status)
 
   if (!profile || !profile.id) return null
 
@@ -57,22 +68,40 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
           </div>
         </div>
 
-        {myProfileId == profile.id ? (
-          <Button asChild className="w-full">
-            <Link href="/akun">
-              <Edit2Icon className="mr-2" />
-              Edit Laporan
-            </Link>
-          </Button>
-        ): (
-          <ChatDialog myProfileId={myProfileId} otherProfile={profile} itemStatus={data.status} itemId={data.id} itemUserId={profile.id} defaultMessage="Saya ingin mengklaim barang ini...">
-            <Button className="w-full">
-              <Hand className="mr-2" /> Klaim Barang Ini
+        {myProfileId === data.id_user &&
+          data.status !== 'diklaim' &&
+          data.status !== 'ditutup' && (
+            <Button onClick={() => setConfirmOpen(true)} className="w-full bg-[#78350F] hover:bg-[#78350F]">
+              <DoorClosed className="mr-2" />
+              Tutup Laporan
             </Button>
-          </ChatDialog>
         )}
 
-        {myProfileId == profile.id ? (
+        {!isClosedOrClaimed && (
+          isOwner ? (
+            <Button asChild className="w-full">
+              <Link href="/akun">
+                <Edit2Icon className="mr-2" />
+                Edit Laporan
+              </Link>
+            </Button>
+          ) : (
+            <ChatDialog
+              myProfileId={myProfileId}
+              otherProfile={profile}
+              itemStatus={data.status}
+              itemId={data.id}
+              itemUserId={profile.id}
+              defaultMessage="Saya ingin mengklaim barang ini...">
+              <Button className="w-full">
+                <Hand className="mr-2" /> Klaim Barang Ini
+              </Button>
+            </ChatDialog>
+          )
+        )}
+
+        {!isClosedOrClaimed && (
+          isOwner ? (
           <Button asChild className="w-full" variant="destructive">
             <Link href="/akun">
               <Trash2Icon className="mr-2" />
@@ -85,6 +114,7 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
               <MessageCircle className="mr-2" /> Kirim Pesan
             </Button>
           </ChatDialog>
+          )
         )}
         <ClaimProcess />
       </Card>
@@ -92,6 +122,29 @@ const AccountItem = ({ data, myProfileId }: AccountItemProps) => {
         <Shield className="w-5 h-5" />
         <span>Jangan bagikan data pribadi dan bertemu di tempat aman.</span>
       </div>
+
+      <ConfirmCloseItem
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        isLoading={confirmClosedMutation.isPending}
+        onConfirm={() => {
+          if (!data.id) return
+          confirmClosedMutation.mutate(
+            {
+              itemId: data.id,
+            },
+            {
+              onSuccess: () => {
+                toast.success('Pencarian item ditutup')
+                setConfirmOpen(false)
+              },
+              onError: (err) => {
+                toast.error('Gagal menutup pencarian item')
+              }
+            }
+          )
+        }}
+      />
     </div>
   )
 }

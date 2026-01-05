@@ -10,15 +10,23 @@ const FOLDER = 'chat-images'
 
 const pendingMessages = new Map<string, { message: string; timestamp: number }>()
 
-export const useChatRoom = (myProfileId?: string | null, otherProfileId?: string | null, itemId?: string | null) => {
+export const useChatRoom = ( myProfileId?: string | null, otherProfileId?: string | null, itemId?: string | null) => {
   return useQuery({
     queryKey: ['chat-room', myProfileId, otherProfileId, itemId],
-    queryFn: () => {
-      if (!myProfileId || !otherProfileId || !itemId) throw new Error('Id tidak lengkap')
-      return getOrCreateChatRoom(myProfileId, otherProfileId, itemId)
+    queryFn: async () => {
+      if (!myProfileId || !otherProfileId || !itemId) {
+        throw new Error('Id tidak lengkap')
+      }
+      return await getOrCreateChatRoom(myProfileId, otherProfileId, itemId)
     },
     enabled: !!myProfileId && !!otherProfileId && !!itemId,
-    staleTime: Infinity
+    staleTime: Infinity,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    retry: (failureCount, error: any) => {
+      if (error?.code === '23505') return false
+      return failureCount < 1
+    },
+    retryDelay: 500
   })
 }
 
@@ -97,7 +105,6 @@ export const useChatMessages = (roomId?: string | null, myProfileId?: string | n
             return [...old, payload.new]
           })
 
-          // Update chat history
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           queryClient.setQueryData(['chat-history', myProfileId], (old: any[] = []) => {
             if (!old) return old
@@ -112,7 +119,6 @@ export const useChatMessages = (roomId?: string | null, myProfileId?: string | n
             )
           })
 
-          // Auto mark as read jika pesan masuk dari orang lain
           if (payload.new.receiver_id === myProfileId && payload.new.sender_id !== myProfileId) {
             setTimeout(() => {
               markMessagesAsRead(roomId, myProfileId).catch(console.error)
@@ -131,20 +137,17 @@ export const useChatMessages = (roomId?: string | null, myProfileId?: string | n
         (payload) => {
           lastEventTimeRef.current = Date.now()
           
-          // Update message in cache
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           queryClient.setQueryData(['chat-messages', roomId], (old: any[] = []) =>
             old.map(m => (m.id === payload.new.id ? payload.new : m))
           )
 
-          // Update chat history unread count saat pesan dibaca
           if (payload.new.is_read && !payload.old.is_read) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             queryClient.setQueryData(['chat-history', myProfileId], (old: any[] = []) => {
               if (!old) return old
               return old.map(room => {
                 if (room.id === payload.new.room_id) {
-                  // Hitung ulang unread count
                   return { 
                     ...room, 
                     unreadCount: Math.max(0, room.unreadCount - 1) 
@@ -154,7 +157,6 @@ export const useChatMessages = (roomId?: string | null, myProfileId?: string | n
               })
             })
 
-            // Juga update untuk sender
             const senderId = payload.new.sender_id
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             queryClient.setQueryData(['chat-history', senderId], (old: any[] = []) => {
@@ -495,7 +497,7 @@ export const useMarkAsRead = (roomId?: string | null, myProfileId?: string | nul
   })
 }
 
-export const useMarkAsOwner = () => {
+export const useFinishedWithClaim = () => {
   const qc = useQueryClient()
 
   return useMutation({
@@ -504,9 +506,7 @@ export const useMarkAsOwner = () => {
       return await confirmFinishedWithClaim(itemId, otherProfileId)
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["item"] })
-      qc.invalidateQueries({ queryKey: ["profile"] })
-      qc.invalidateQueries({ queryKey: ["reward_points"] })
+      qc.invalidateQueries()
     },
   })
 }

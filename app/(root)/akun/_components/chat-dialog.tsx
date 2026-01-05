@@ -14,7 +14,7 @@ import {
   useChatMessages,
   useSendMessage,
   useMarkAsRead,
-  useMarkAsOwner
+  useFinishedWithClaim
 } from '@/hooks/useChats'
 import FinishWithClaim from '@/app/(root)/akun/_components/finish-with-claim'
 
@@ -60,7 +60,8 @@ export const ChatDialog = ({
   const markAsRead = useMarkAsRead(roomId, myProfileId)
 
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const markAsOwnerMutation = useMarkAsOwner()
+  const finishClaimMutation = useFinishedWithClaim()
+  
   const canMarkAsOwner =
     myProfileId == itemUserId &&
     (itemStatus == 'ditemukan' || itemStatus == 'hilang')
@@ -285,10 +286,10 @@ export const ChatDialog = ({
       <FinishWithClaim
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        isLoading={markAsOwnerMutation.isPending}
+        isLoading={finishClaimMutation.isPending}
         onConfirm={() => {
           if (!myProfileId || !otherProfileId) return
-          markAsOwnerMutation.mutate(
+          finishClaimMutation.mutate(
             {
               itemId,
               otherProfileId,
@@ -299,7 +300,6 @@ export const ChatDialog = ({
                 setConfirmOpen(false)
               },
               onError: (err) => {
-                console.error(err)
                 toast.error('Gagal menandai item')
               }
             }

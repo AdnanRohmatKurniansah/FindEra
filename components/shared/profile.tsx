@@ -14,14 +14,18 @@ import Image from "next/image"
 import Link from "next/link"
 import { logout } from "@/service/authService"
 import { useProfile } from "@/hooks/useProfiles"
+import { useAuth } from "@/providers/user-provider"
 
 export default function UserDropdown() {
   const { data: profile } = useProfile()
+  const { user } = useAuth()
 
   if (!profile) return null
 
   const avatarUrl = profile?.image || '/images/avatar.png';
   const displayName = profile?.name
+
+  const isEmailUser = user?.app_metadata?.provider === "email"
 
   const handleLogout = async () => {
     const { error } = await logout()
@@ -57,11 +61,13 @@ export default function UserDropdown() {
             <User className="w-4 h-4" /> Profile
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/akun/ubah-password" className="flex gap-2">
-            <Settings className="w-4 h-4" /> Ubah Password
-          </Link>
-        </DropdownMenuItem>
+        {isEmailUser && (
+          <DropdownMenuItem asChild>
+            <Link href="/akun/ubah-password" className="flex gap-2">
+              <Settings className="w-4 h-4" /> Ubah Password
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}

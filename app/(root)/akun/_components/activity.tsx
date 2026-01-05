@@ -15,7 +15,7 @@ import { useChatHistory } from "@/hooks/useChats"
 import { formatTime } from "@/lib/utils"
 import Image from "next/image"
 import { useProfile } from '@/hooks/useProfiles'
-import { ChatDialog } from "../../item/[id]/_components/chat-dialog"
+import { ChatDialog } from "./chat-dialog"
 import { useEffect, useMemo, useState } from "react"
 import { createClientSupabase } from "@/lib/supabase/client"
 import { Badge } from "@/components/ui/badge"
@@ -230,21 +230,16 @@ const Activity = () => {
                     <div className="flex items-start gap-4">
                       {item && (
                         <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                          <Image 
-                            src={item.image_url || '/images/placeholder.png'}
+                          <Image src={item.image_url || '/images/placeholder.png'}
                             alt={item.title || 'Item'}
-                            fill
-                            className="object-cover"
-                          />
+                            fill className="object-cover"/>
                         </div>
                       )}
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm line-clamp-1">
-                              {reward.reason}
-                            </h4>
+                            <h4 className="font-semibold text-sm line-clamp-1">{reward.reason}</h4>
                             {item && (
                               <Link href={`/item/${item.id}`} className="text-sm text-gray-600 hover:text-primary line-clamp-1 mt-1">
                                 {item.title}
@@ -272,6 +267,7 @@ const Activity = () => {
         </TabsContent>
 
         <TabsContent value="chat" className="min-h-[200px]">
+          <h3 className="font-semibold text-xl mb-5">Riwayat Chat</h3>
           {chatLoading ? (
             <div className="py-10 text-center text-sm text-gray-500">
               Memuat riwayat chat...

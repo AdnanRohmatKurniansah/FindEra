@@ -2,17 +2,26 @@ import { createClientSupabase } from '@/lib/supabase/client'
 import { rewardConfirmClaim, rewardFindItem } from './rewardService'
 
 export const getOrCreateChatRoom = async (myProfileId: string, otherProfileId: string, item_id: string) => {
-  const { data: existingRoom } = await createClientSupabase()
+  const { data: existingRooms, error: fetchError } = await createClientSupabase()
     .from('chat_rooms')
     .select('id')
-    .or(
-      `and(profile_a.eq.${myProfileId},profile_b.eq.${otherProfileId}),and(profile_a.eq.${otherProfileId},profile_b.eq.${myProfileId})`
-    )
-    .maybeSingle()
+    .eq('item_id', item_id)
+    .in('profile_a', [myProfileId, otherProfileId])
+    .in('profile_b', [myProfileId, otherProfileId])
+  
+  if (fetchError) {
+    throw fetchError
+  }
 
-  if (existingRoom) return existingRoom.id
+  const existingRoom = existingRooms?.find(room => 
+    true 
+  )
 
-  const { data: newRoom, error } = await createClientSupabase()
+  if (existingRoom) {
+    return existingRoom.id
+  }
+
+  const { data: newRoom, error: insertError } = await createClientSupabase()
     .from('chat_rooms')
     .insert({
       profile_a: myProfileId,
@@ -22,7 +31,27 @@ export const getOrCreateChatRoom = async (myProfileId: string, otherProfileId: s
     .select('id')
     .single()
 
-  if (error) throw error
+  if (insertError?.code === '23505') {
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    const { data: retryRooms } = await createClientSupabase()
+      .from('chat_rooms')
+      .select('id')
+      .eq('item_id', item_id)
+      .in('profile_a', [myProfileId, otherProfileId])
+      .in('profile_b', [myProfileId, otherProfileId])
+    
+    const retryRoom = retryRooms?.[0]
+    if (retryRoom) {
+      return retryRoom.id
+    }
+    
+    throw new Error('Gagal menemukan ruang obrolan')
+  }
+
+  if (insertError) {
+    throw insertError
+  }
 
   return newRoom.id
 }

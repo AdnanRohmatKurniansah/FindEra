@@ -1,5 +1,5 @@
 import { createClientSupabase } from "@/lib/supabase/client"
-import { createReport, deleteReport, fetchClaimHistory, findReport, getMyReports, getReports, updateReport } from "@/service/reportsService"
+import { confirmClosed, createReport, deleteReport, fetchClaimHistory, findReport, getMyReports, getReports, updateReport } from "@/service/reportsService"
 import { fetchRewardHistory } from "@/service/rewardService"
 import { createReportData } from "@/types"
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -121,5 +121,19 @@ export const useRewardHistory = (myProfileId?: string | null) => {
     },
     enabled: !!myProfileId,
     staleTime: 60 * 1000,
+  })
+}
+
+export const useConfirmClosed = () => {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ itemId }: {itemId: string }) => {
+      if (!itemId) throw new Error("Parameter tidak lengkap")
+      return await confirmClosed(itemId)
+    },
+    onSuccess: () => {
+      qc.invalidateQueries()
+    },
   })
 }

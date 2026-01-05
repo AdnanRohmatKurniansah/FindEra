@@ -326,3 +326,28 @@ export const fetchClaimHistory = async (myProfileId: string) => {
 
   return data || []
 }
+
+export const confirmClosed = async (id_item: string) => {
+  const profile = await getMyProfile()
+
+  if (!profile) {
+    throw new Error("Silahkan login terlebih dahulu")
+  }
+
+  const { data: item, error: itemError } = await createClientSupabase()
+    .from("items")
+    .select("id, id_user, status")
+    .eq("id", id_item)
+    .single()
+
+    if (itemError || !item) throw itemError || new Error("Item tidak ditemukan")
+
+    const { error: updateError } = await createClientSupabase()
+      .from("items")
+      .update({ status: "ditutup" })
+      .eq("id", id_item)
+
+    if (updateError) throw updateError
+
+    return true
+} 
