@@ -53,13 +53,16 @@ const Map = ({ position, zoom, items }: MapProps) => {
 
         return (
           <Marker key={item.id} position={[item.latitude, item.longitude]}>
-            <Popup>
+            <Popup className="gap-1">
               <strong>
                 <Link className="text-black" href={`/item/${item.id}`}>
                   {item.title}
                 </Link>
+              </strong>
+              <br />
+              <strong>
                 {status && (
-                  <Badge className={`ms-2 rounded-xl text-[9px] md:text-[12px] px-2 py-1 ${status.className}`}>
+                  <Badge className={`rounded-xl text-[10px] px-3 ${status.className}`}>
                     {status.label}
                   </Badge>
                 )}
