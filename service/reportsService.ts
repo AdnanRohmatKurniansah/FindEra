@@ -7,13 +7,19 @@ import { generateRandomString, isValidUUID } from "@/lib/utils"
 const BUCKET = "findera_bucket"
 const FOLDER = "items_upload"
 
-export const getReports = async (page = 1, limit = 6, 
-  filters?: {
-  status?: string | null
-  category?: string | null 
-  search?: string | null 
-}) => {
-    
+export const getReports = async (
+  page = 1,
+  limit = 6,
+  filters: {
+    status?: string | null
+    category?: string | null
+    search?: string | null
+  } = {}
+) => {
+  const { status, category, search } = filters
+
+  const hasCategoryFilter = !!category?.trim()
+
   let query = createClientSupabase()
     .from("items")
     .select(
@@ -31,23 +37,23 @@ export const getReports = async (page = 1, limit = 6,
         created_at,
         updated_at,
         profiles ( id, name, image ),
-        categories ( id, name )
+        categories ${hasCategoryFilter ? "!inner" : ""} ( id, name )
       `,
       { count: "exact" }
     )
     .order("created_at", { ascending: false })
 
-  if (filters?.status) {
-    query = query.eq("status", filters.status)
-  }
-  
-  if (filters?.category?.trim()) {
-    query = query.ilike("categories.name", `%${filters.category.trim()}%`)
+  if (status) {
+    query = query.eq("status", status)
   }
 
-  if (filters?.search?.trim()) {
+  if (hasCategoryFilter && category) {
+    query = query.ilike("categories.name", `%${category.trim()}%`)
+  }
+
+  if (search?.trim()) {
     query = query.or(
-      `title.ilike.%${filters.search.trim()}%,description.ilike.%${filters.search.trim()}%`
+      `title.ilike.%${search.trim()}%,description.ilike.%${search.trim()}%`
     )
   }
 
@@ -55,7 +61,6 @@ export const getReports = async (page = 1, limit = 6,
   const to = from + limit - 1
 
   const { data, error, count } = await query.range(from, to)
-
 
   if (error) throw error
 
