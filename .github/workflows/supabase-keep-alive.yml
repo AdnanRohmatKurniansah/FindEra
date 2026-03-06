@@ -1,0 +1,47 @@
+# .github/workflows/supabase-keep-alive.yml
+#
+# SETUP:
+# 1. Simpan file ini di repo kamu di path: .github/workflows/supabase-keep-alive.yml
+# 2. Tambahkan dua secrets di GitHub:
+#    - Buka repo → Settings → Secrets and variables → Actions → New repository secret
+#    - SUPABASE_URL  → https://rivekkyqiapwoebzruqr.supabase.co
+#    - SUPABASE_ANON_KEY → (ambil dari Supabase Dashboard → Project Settings → API → anon public)
+
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Ping setiap 4 hari sekali (lebih aman dari batas 7 hari)
+    # Jadwal: jam 08.00 WIB (01.00 UTC) pada hari ke-1, 5, 9, 13, dst
+    - cron: '0 1 */4 * *'
+
+  # Tombol manual jika ingin trigger sekarang (opsional)
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          echo "🔔 Mengirim ping ke Supabase..."
+
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/categories?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+
+          echo "📡 HTTP Status: $RESPONSE"
+
+          if [ "$RESPONSE" = "200" ]; then
+            echo "✅ Supabase aktif dan merespons dengan baik."
+          else
+            echo "❌ Ping gagal! Status code: $RESPONSE"
+            exit 1
+          fi
+
+      - name: Log waktu ping
+        run: |
+          echo "🕐 Ping dilakukan pada: $(TZ='Asia/Jakarta' date '+%Y-%m-%d %H:%M:%S WIB')"
